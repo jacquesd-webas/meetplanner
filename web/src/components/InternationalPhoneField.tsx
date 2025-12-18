@@ -12,6 +12,13 @@ const phoneCountryOptions = [
   { code: "AU", dialCode: "+61", label: "Australia", flag: "🇦🇺" }
 ];
 
+export function getDefaultPhoneCountry(localeCountry?: string) {
+  if (localeCountry && phoneCountryOptions.some((option) => option.code === localeCountry)) {
+    return localeCountry;
+  }
+  return "ZA";
+}
+
 export function buildInternationalPhone(countryCode: string, local: string) {
   const option = phoneCountryOptions.find((item) => item.code === countryCode) || phoneCountryOptions[0];
   const trimmedLocal = local.trim();

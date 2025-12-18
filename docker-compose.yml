@@ -40,7 +40,7 @@ services:
       context: .
       dockerfile: ./web/Dockerfile
       args:
-        VITE_API_BASEURL: ${API_BASEURL:-http://api:3000}
+        API_BASEURL: ${API_BASEURL:-http://api:3000}
     env_file:
       - ./env/base.env
       - ./env/development.env

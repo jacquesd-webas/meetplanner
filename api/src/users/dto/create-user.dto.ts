@@ -27,14 +27,17 @@ export class CreateUserDto {
   phone?: string;
 
   @ApiPropertyOptional({ description: "IDP provider name (google, facebook, etc.)" })
+  @IsOptional()
   @IsString()
   idpProvider?: string;
 
   @ApiPropertyOptional({ description: "IDP subject/user id" })
+  @IsOptional()
   @IsString()
   idpSubject?: string;
   
   @ApiPropertyOptional({ description: "Organization ID" })
+  @IsOptional()
   @IsString()
   organizationId?: string;
 

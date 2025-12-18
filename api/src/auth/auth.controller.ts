@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Post, Query, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Body, Controller, ForbiddenException, Get, Post, Query, UnauthorizedException } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
@@ -31,6 +31,16 @@ export class AuthController {
   @Post("register")
   async register(@Body() dto: RegisterDto): Promise<TokenPair> {
     return this.authService.register(dto);
+  }
+
+  @Public()
+  @Get("register/check")
+  async registerCheck(@Query("email") email?: string) {
+    if (!email) {
+      throw new BadRequestException("Email is required");
+    }
+    const existing = await this.usersService.findByEmail(email);
+    return { exists: Boolean(existing) };
   }
 
   @Public()

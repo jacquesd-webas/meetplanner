@@ -11,33 +11,57 @@ import {
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
-import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import { useState } from "react";
 import { useRegister } from "../hooks/useRegister";
 import { useNavigate } from "react-router-dom";
 import { AuthSocialButtons } from "../components/AuthSocialButtons";
 import { EmailField } from "../components/EmailField";
+import { InternationalPhoneField, buildInternationalPhone, getDefaultPhoneCountry } from "../components/InternationalPhoneField";
+import { getLocaleDefaults } from "../utils/locale";
+import { useApi } from "../hooks/useApi";
 
 function RegisterPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState(() => {
+    const localeCountry = getLocaleDefaults().countryCode;
+    return getDefaultPhoneCountry(localeCountry);
+  });
+  const [phoneLocal, setPhoneLocal] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [selectedMethod, setSelectedMethod] = useState<
     null | "google" | "microsoft" | "facebook" | "email"
   >(null);
   const { registerAsync, isLoading, error } = useRegister();
+  const api = useApi();
   const navigate = useNavigate();
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    registerAsync({ firstName, lastName, phone, email, password })
+    registerAsync({
+      firstName,
+      lastName,
+      phone: buildInternationalPhone(phoneCountry, phoneLocal),
+      email,
+      password
+    })
       .then(() => navigate("/"))
       .catch((err) => {
         // eslint-disable-next-line no-console
         console.error("Registration failed", err);
       });
+  };
+
+  const checkEmail = async () => {
+    const value = email.trim();
+    if (!value) {
+      setEmailError(null);
+      return;
+    }
+    const res = await api.get<{ exists: boolean }>(`/auth/register/check?email=${encodeURIComponent(value)}`);
+    setEmailError(res.exists ? "This email is already registered." : null);
   };
 
   return (
@@ -113,25 +137,21 @@ function RegisterPage() {
                     ),
                   }}
                 />
-                <TextField
+                <InternationalPhoneField
                   label="Phone"
                   required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <PhoneOutlinedIcon
-                        fontSize="small"
-                        sx={{ mr: 1, color: "text.disabled" }}
-                      />
-                    ),
-                  }}
+                  country={phoneCountry}
+                  local={phoneLocal}
+                  onCountryChange={setPhoneCountry}
+                  onLocalChange={setPhoneLocal}
                 />
                 <EmailField
                   required
                   value={email}
                   onChange={(value) => setEmail(value)}
+                  onBlur={checkEmail}
                 />
+                {emailError && <Alert severity="warning">{emailError}</Alert>}
                 <TextField
                   label="Password"
                   type="password"
@@ -152,6 +172,7 @@ function RegisterPage() {
                   variant="contained"
                   size="large"
                   sx={{ textTransform: "uppercase" }}
+                  disabled={Boolean(emailError)}
                 >
                   {isLoading ? "Creating..." : "Create account"}
                 </Button>

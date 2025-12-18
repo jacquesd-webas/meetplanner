@@ -24,7 +24,7 @@ import { MeetSignupDuplicateDialog } from "../components/MeetSignupDuplicateDial
 import { MeetSignupSubmitted } from "../components/MeetSignupSubmitted";
 import { useMeetSignupSheetState } from "./MeetSignupSheetState";
 import { getLocaleDefaults } from "../utils/locale";
-import { InternationalPhoneField, buildInternationalPhone } from "../components/InternationalPhoneField";
+import { InternationalPhoneField, buildInternationalPhone, getDefaultPhoneCountry } from "../components/InternationalPhoneField";
 import { EmailField } from "../components/EmailField";
 
 function LabeledField({
@@ -60,7 +60,7 @@ function MeetSignupSheet() {
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [phoneCountry, setPhoneCountry] = useState(() => {
     const localeCountry = getLocaleDefaults().countryCode;
-    return phoneCountryOptions.some((option) => option.code === localeCountry) ? localeCountry : "ZA";
+    return getDefaultPhoneCountry(localeCountry);
   });
   const [phoneLocal, setPhoneLocal] = useState("");
   const [lastCheckedContact, setLastCheckedContact] = useState<{ email: string; phone: string } | null>(null);
@@ -192,11 +192,13 @@ function MeetSignupSheet() {
           <Typography color="text.secondary">Loading meet...</Typography>
         ) : (
           <Stack spacing={1.5}>
-            <Stack direction="row" spacing={1} alignItems="center">
+            <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
               <Typography variant="h4" fontWeight={700}>
                 {meet.name}
               </Typography>
-              <Chip label={meet.status} color="primary" />
+              <Button variant="outlined" size="small" href="/login">
+                Login
+              </Button>
             </Stack>
             {dateLabel && (
               <Typography variant="subtitle1" color="text.secondary">
@@ -236,6 +238,11 @@ function MeetSignupSheet() {
                   value={fullName}
                   onChange={(e) => setField("fullName", e.target.value)}
                   fullWidth
+                  InputProps={{
+                    startAdornment: (
+                      <PersonOutlineIcon fontSize="small" sx={{ mr: 1, color: "text.disabled" }} />
+                    )
+                  }}
                 />
               </LabeledField>
               <LabeledField label="Email" required>
