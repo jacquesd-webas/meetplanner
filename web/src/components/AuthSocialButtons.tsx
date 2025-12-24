@@ -15,41 +15,31 @@ export function AuthSocialButtons({
 }: AuthSocialButtonsProps) {
   const api = useApi();
 
-  const handleSelect = (provider: "google" | "microsoft" | "facebook" | "email") => {
-    if (provider === "google") {
-      api
-        .get<{ url: string }>("/auth/google/url")
-        .then(({ url }) => {
-          window.location.assign(url);
-        })
-        .catch(() => {
-          onSelect?.(provider);
-        });
-      return;
+  const handleSelect = (
+    provider: "google" | "microsoft" | "facebook" | "email"
+  ) => {
+    // Social providers disabled for now
+    if (provider === "email") {
+      onSelect?.(provider);
     }
-    onSelect?.(provider);
   };
 
   if (compact) {
     return (
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{ width: "100%" }}
-        flexWrap="wrap"
-      >
+      <Stack direction="row" spacing={1} sx={{ width: "100%" }} flexWrap="wrap">
         <Button
           variant="outlined"
+          sx={{ flex: 1, minWidth: 0 }}
           startIcon={
             <img src="/static/google.svg" alt="Google" width={18} height={18} />
           }
-          sx={{ flex: 1, minWidth: 0 }}
-          onClick={() => handleSelect("google")}
+          disabled
         >
           Google
         </Button>
         <Button
           variant="outlined"
+          sx={{ flex: 1, minWidth: 0 }}
           startIcon={
             <img
               src="/static/microsoft.svg"
@@ -58,13 +48,12 @@ export function AuthSocialButtons({
               height={18}
             />
           }
-          sx={{ flex: 1, minWidth: 0 }}
-          onClick={() => handleSelect("microsoft")}
         >
           Microsoft
         </Button>
         <Button
           variant="outlined"
+          sx={{ flex: 1, minWidth: 0 }}
           startIcon={
             <img
               src="/static/facebook.svg"
@@ -73,8 +62,7 @@ export function AuthSocialButtons({
               height={18}
             />
           }
-          sx={{ flex: 1, minWidth: 0 }}
-          onClick={() => handleSelect("facebook")}
+          disabled
         >
           Facebook
         </Button>
@@ -106,43 +94,43 @@ export function AuthSocialButtons({
       )}
       <Button
         variant="outlined"
-        fullWidth
         startIcon={
-          <img src="/static/google.svg" alt="Google" width={20} height={20} />
+          <img src="/static/google.svg" alt="Google" width={18} height={18} />
         }
-        onClick={() => handleSelect("google")}
+        fullWidth
+        disabled
       >
-        Continue with Google
+        Continue with Google (coming soon)
       </Button>
       <Button
         variant="outlined"
-        fullWidth
         startIcon={
           <img
             src="/static/microsoft.svg"
             alt="Microsoft"
-            width={20}
-            height={20}
+            width={18}
+            height={18}
           />
         }
-        onClick={() => handleSelect("microsoft")}
+        fullWidth
+        disabled
       >
-        Continue with Microsoft
+        Continue with Microsoft (coming soon)
       </Button>
       <Button
         variant="outlined"
-        fullWidth
         startIcon={
           <img
             src="/static/facebook.svg"
             alt="Facebook"
-            width={20}
-            height={20}
+            width={18}
+            height={18}
           />
         }
-        onClick={() => handleSelect("facebook")}
+        fullWidth
+        disabled
       >
-        Continue with Facebook
+        Continue with Facebook (coming soon)
       </Button>
     </Stack>
   );
