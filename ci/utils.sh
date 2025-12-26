@@ -57,7 +57,7 @@ get_app_site() {
   echo "${app_name}.apps.fringecoding.com"
 }
 
-get_package_manaher() {
+get_package_manager() {
   if [ -f "pnpm-lock.yaml" ]; then
     echo "pnpm"
   elif [ -f "yarn.lock" ]; then

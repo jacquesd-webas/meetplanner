@@ -52,25 +52,25 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build api image (cache)
-        uses: docker/build-push-action@v5
+      - name: Restore buildx cache
+        uses: actions/cache@v4
         with:
-          context: ./api
-          tags: api:latest
-          push: false
-          load: true
-          cache-from: type=gha,scope=api-image
-          cache-to: type=gha,scope=api-image,mode=max
+          path: /tmp/.buildx-cache
+          key: buildx-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            buildx-${{ runner.os }}-
 
-      - name: Build db_migration image (cache)
-        uses: docker/build-push-action@v5
-        with:
-          context: ./db_migration
-          tags: db_migration:latest
-          push: false
-          load: true
-          cache-from: type=gha,scope=db_migration-image
-          cache-to: type=gha,scope=db_migration-image,mode=max
+      - name: Build images via ci/01_build_docker.sh
+        env:
+          COMPOSE_DOCKER_CLI_BUILD: 1
+          DOCKER_BUILDKIT: 1
+          BUILDX_CACHE_FROM: type=local,src=/tmp/.buildx-cache
+          BUILDX_CACHE_TO: type=local,dest=/tmp/.buildx-cache-new,mode=max
+        run: |
+          mkdir -p /tmp/.buildx-cache /tmp/.buildx-cache-new
+          ci/01_build_docker.sh api db_migrate
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   build-web:
     runs-on: ubuntu-latest
@@ -100,30 +100,21 @@ jobs:
           restore-keys: |
             pnpm-store-build-${{ runner.os }}-
 
-      - name: Install dependencies
+      - name: Install web dependencies
         working-directory: web
         run: pnpm install --frozen-lockfile
 
-      - name: Restore web build cache
-        id: web-build-cache
-        uses: actions/cache@v4
-        with:
-          path: web/build
-          key: web-build-${{ runner.os }}-${{ hashFiles('web/pnpm-lock.yaml', 'web/src/**', 'web/public/**') }}
-
-      - name: Build web assets
-        if: steps.web-build-cache.outputs.cache-hit != 'true'
-        working-directory: web
-        run: pnpm run build
-
-      - name: Archive web build
-        run: tar -czf web-build.tar.gz -C web build
+      - name: Build web via ci/01_build_web.sh
+        env:
+          VERSION: ${{ needs.metadata.outputs.version }}
+        run: |
+          ci/01_build_web.sh web
 
       - name: Upload web build artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-build
-          path: web-build.tar.gz
+          path: dist/*.tgz
           retention-days: 3
 
   tests:
@@ -180,6 +171,14 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Restore buildx cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            buildx-${{ runner.os }}-
+
       - name: Login to registry
         run: echo ${{ secrets.CI_REGISTRY_PAT }} | docker login ${{ vars.CI_REGISTRY_HOST }} -u ${{ vars.CI_REGISTRY_USER }} --password-stdin
 
@@ -191,8 +190,8 @@ jobs:
           tags: |
             ${{ vars.CI_REGISTRY_HOST }}/fringecoding/adventuremeets_api:${{ needs.metadata.outputs.version }}
             ${{ vars.CI_REGISTRY_HOST }}/fringecoding/adventuremeets_api:latest
-          cache-from: type=gha,scope=api-image
-          cache-to: type=gha,scope=api-image,mode=max
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
       - name: Build and push backup_runner image
         uses: docker/build-push-action@v5
@@ -202,8 +201,13 @@ jobs:
           tags: |
             ${{ vars.CI_REGISTRY_HOST }}/fringecoding/adventuremeets_backup_runner:${{ needs.metadata.outputs.version }}
             ${{ vars.CI_REGISTRY_HOST }}/fringecoding/adventuremeets_backup_runner:latest
-          cache-from: type=gha,scope=backup-runner-image
-          cache-to: type=gha,scope=backup-runner-image,mode=max
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Persist buildx cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   publish-web:
     runs-on: ubuntu-latest

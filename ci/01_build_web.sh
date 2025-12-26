@@ -33,7 +33,7 @@ echo "Building web archives..."
 for DIR in $WEB_PROJECTS; do
     echo "Building $DIR..."
     cd $DIR
-    NPM=$(get_package_manaher)
+    NPM=$(get_package_manager)
     $NPM run build
     cd $OLDPWD
     WAR_FILE="${APP_NAME}-${DIR}-${VERSION}.tgz"
