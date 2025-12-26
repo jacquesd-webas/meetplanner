@@ -85,10 +85,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Enable pnpm
         run: corepack enable
@@ -106,22 +104,20 @@ jobs:
             pnpm-store-build-${{ runner.os }}-
           retention-days: 1
 
-      - name: Install web dependencies
-        working-directory: ${{ env.WEB_DIRECTORY:-web}}
-        run: pnpm install --frozen-lockfile
-
       - name: Build web via ci/01_build_web.sh
         env:
           VERSION: ${{ needs.metadata.outputs.version }}
         run: |
           ci/01_build_web.sh web
 
-      - name: Upload web build artifact
-        uses: actions/upload-artifact@v4
+      - name: Cache web build output
+        uses: actions/cache@v4
         with:
-          name: web-build
-          path: dist/*.tgz
-          retention-days: 3
+          path: dist
+          key: web-build-${{ github.sha }}
+          restore-keys: |
+            web-build-
+          retention-days: 1
 
   tests:
     runs-on: ubuntu-latest
@@ -129,6 +125,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Restore buildx cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            buildx-${{ runner.os }}-
+          retention-days: 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -227,11 +232,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download web build artifact
-        uses: actions/download-artifact@v4
+      - name: Restore web build cache
+        uses: actions/cache@v4
         with:
-          name: web-build
-          path: web-artifacts
+          path: dist
+          key: web-build-${{ github.sha }}
+          restore-keys: |
+            web-build-
+          retention-days: 1
+
+      - name: Prepare web bundle
+        run: |
+          FILE=$(ls dist/*.tgz | head -n 1)
+          if [ -z "$FILE" ]; then
+            echo "No cached web bundle found in dist/"
+            exit 1
+          fi
+          cp "$FILE" web-build.tar.gz
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3
