@@ -17,6 +17,7 @@ env:
   DB_HOST: ${{ vars.DB_HOST }}
   MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
   MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
 jobs:
   metadata:
