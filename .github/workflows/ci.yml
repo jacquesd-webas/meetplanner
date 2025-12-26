@@ -224,7 +224,7 @@ jobs:
 
       - name: Login to registry
         env:
-          REG_HOST: ${{ env.DOCKER_REGISTRY_HOST }}
+          REG_HOST: ${{ env.CI_REGISTRY_HOST }}
           REG_USER: ${{ vars.CI_REGISTRY_USER }}
           REG_PAT: ${{ secrets.CI_REGISTRY_PAT }}
         shell: bash
