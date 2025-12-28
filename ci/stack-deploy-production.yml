@@ -1,5 +1,18 @@
 version: '3.8'
 services:
+  db_migrate:
+    image: fringecoding/adventuremeets_db_migrate:${VERSION:-latest}
+    env_file:
+      - ./.env
+    environment:
+      DB_SEED_DATA: ${DB_SEED_DATA:-0}
+    volumes:
+      - ./backups:/app/db/backup
+    networks:
+      - adventuremeets
+    deploy:
+      replicas: 0
+
   api:
     image: fringecoding/adventuremeets_api:${VERSION:-latest}
     env_file:

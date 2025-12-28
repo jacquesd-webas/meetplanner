@@ -29,5 +29,5 @@ cd $SITE_NAME
 
 # Ensure a local backups directory exists and mount it into the container
 mkdir -p backups
-VERSION=${VERSION} docker compose -f stack-deploy.yml run --rm -v "\$PWD/backups:/app/db/backup" db_migrate
+VERSION=${VERSION} docker compose -f stack-deploy.yml run --rm db_migrate
 EOF
