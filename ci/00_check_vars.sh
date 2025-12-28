@@ -6,8 +6,8 @@
 set -eu
 
 CI_DIR=$(dirname $0)
-source $CI_DIR/config.sh
-source $CI_DIR/utils.sh
+. "$CI_DIR/config.sh"
+. "$CI_DIR/utils.sh"
 
 ENV_DIR="$CI_DIR/../env"
 FILES="$ENV_DIR/vars.list $ENV_DIR/secrets.list"

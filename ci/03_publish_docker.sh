@@ -4,8 +4,8 @@
 # Assumes images are already built and loaded locally and docker login has been performed.
 
 CI_DIR=$(dirname $0)
-source $CI_DIR/config.sh
-source $CI_DIR/utils.sh
+. "$CI_DIR/config.sh"
+. "$CI_DIR/utils.sh"
 
 DOCKER_IMAGES_ARGS=$@
 

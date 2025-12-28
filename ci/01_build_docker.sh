@@ -11,8 +11,8 @@
 #   DOCKER_IMAGES="api db_migrate" ci/01_build_docker.sh
 
 CI_DIR=$(dirname $0)
-source $CI_DIR/config.sh
-source $CI_DIR/utils.sh
+. "$CI_DIR/config.sh"
+. "$CI_DIR/utils.sh"
 IS_CI=${CI:-false}
 
 APP_NAME=$(get_app_name "${APP_NAME:-}")

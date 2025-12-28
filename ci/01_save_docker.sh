@@ -3,7 +3,7 @@
 # Save built docker images to dist/docker-images.tar
 
 CI_DIR=$(dirname $0)
-source $CI_DIR/config.sh
+. "$CI_DIR/config.sh"
 source $CI_DIR/utils.sh
 
 APP_NAME=$(get_app_name "${APP_NAME:-}")
