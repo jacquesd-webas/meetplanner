@@ -9,7 +9,7 @@ on:
 
 env:
   DOCKER_IMAGES: api db_migrate web
-  WEB_ARCHIVES: web
+  WEB_PROJECTS: web
   NODE_PROJECTS: api web
   CI_REGISTRY_HOST: ${{ vars.CI_REGISTRY_HOST }}
   CI_REGISTRY_USER: ${{ vars.CI_REGISTRY_USER }}
@@ -124,7 +124,7 @@ jobs:
           ENVIRONMENT: ${{ env.GITHUB_ENVIRONMENT != '' && env.GITHUB_ENVIRONMENT || (needs.metadata.outputs.is_release_tag == 'true' && 'production' || 'development') }}    
           VERSION: ${{ needs.metadata.outputs.version }}
         run: |
-          ci/01_build_web.sh ${{ env.WEB_ARCHIVES }}
+          ci/01_build_web.sh ${{ env.WEB_PROJECTS }}
 
       - name: Cache web build output
         uses: actions/cache@v4
