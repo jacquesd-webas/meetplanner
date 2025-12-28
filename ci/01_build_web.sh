@@ -51,7 +51,7 @@ for DIR in $WEB_PROJECTS; do
       echo "Non-production environment, using latest tag for web archive."
       WAR_FILE="${APP_NAME}-${DIR}-latest.tgz"
     fi
-    echo "Creating war file $WAR_FILE"
+    echo "Creating war file $CI_DIR/../dist/$WAR_FILE"
     mkdir -p $CI_DIR/../dist
     tar -czf $CI_DIR/../dist/$WAR_FILE -C ${DIR}/dist .
 done
