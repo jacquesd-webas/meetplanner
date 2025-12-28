@@ -10,8 +10,11 @@ SITE_NAME=$(get_app_site "${APP_SITE:-}")
 VERSION=$(get_app_version "${VERSION:-}")
 APP_NAME=$(get_app_name "${APP_NAME:-}")
 
+ENVIRONMENT=${ENVIRONMENT:-development}
+echo "Using environment: ${ENVIRONMENT}"
+
 # Parameters
-STACK_DEPLOY_FILE=${1:-stack-deploy.yml}
+STACK_DEPLOY_FILE=${1:-stack-deploy-${ENVIRONMENT}.yml}
 
 # Stack deploy directory and filename
 STACK_DEPLOY_SRC_FILE="$CI_DIR/$STACK_DEPLOY_FILE"

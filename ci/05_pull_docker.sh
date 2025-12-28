@@ -9,7 +9,6 @@ SITE_NAME=$(get_app_site "${APP_SITE:-}")
 VERSION=$(get_app_version "${VERSION:-}")
 
 DOCKER_IMAGES_ARGS=$@
-
 if [ ! -z "$DOCKER_IMAGES_ARGS" ]; then
     echo "DOCKER_IMAGES set via args [$DOCKER_IMAGES_ARGS]"
     DOCKER_IMAGES=$DOCKER_IMAGES_ARGS
@@ -20,6 +19,9 @@ else
     echo "Nothing to deploy"
     exit 0
 fi
+
+ENVIRONMENT=${ENVIRONMENT:-development}
+echo "Using environment: ${ENVIRONMENT}"
 
 if [ -z $DEPLOY_USER ]; then
   echo "Error: DEPLOY_USER is not set in config.sh"

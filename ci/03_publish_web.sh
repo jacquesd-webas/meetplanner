@@ -26,11 +26,19 @@ if [ -z $WEB_HOST ]; then
   exit 1
 fi
 
+ENVIRONMENT=${ENVIRONMENT:-development}
+echo "Using environment: ${ENVIRONMENT}"
+
 echo "Publishing web archives..."
 for DIR in $WEB_PROJECTS; do
     echo "Publishing $DIR..."
     cd $DIR
-    WAR_FILE="${APP_NAME}-${DIR}-${VERSION}.tgz"
+    if [ $ENVIRONMENT = "production" ]; then
+      WAR_FILE="${APP_NAME}-${DIR}-${VERSION}.tgz"
+    else
+      echo "Non-production environment, using latest tag for web archive."
+      WAR_FILE="${APP_NAME}-${DIR}-latest.tgz"
+    fi
     if [ ! -f "$CI_DIR/../dist/${WAR_FILE}" ]; then
       echo "Web archive $WAR_FILE not found in dist directory."
       exit 1

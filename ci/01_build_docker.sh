@@ -32,6 +32,9 @@ if [ -z "$DOCKER_IMAGES" ]; then
     exit 0
 fi
 
+ENVIRONMENT=${ENVIRONMENT:-development}
+echo "Using environment: ${ENVIRONMENT}"
+
 # Build with Buildx/Bake so we can use cache across steps/jobs.
 COMPOSE_FILE=${COMPOSE_FILE:-docker-compose.yml}
 TAG_ARGS=""

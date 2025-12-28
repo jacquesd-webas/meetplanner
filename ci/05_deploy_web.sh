@@ -20,6 +20,9 @@ if [ -z $WEB_HOST ]; then
   exit 1
 fi
 
+ENVIRONMENT=${ENVIRONMENT:-development}
+echo "Using environment: ${ENVIRONMENT}"
+
 echo "Deploying web archive for '$APP_NAME:$VERSION'..."
 ssh $SSH_ARGS $DEPLOY_USER@$WEB_HOST <<EOF
 cd $SITE_NAME
