@@ -1,4 +1,4 @@
-#!bin/sh
+#!/bin/sh
 
 # This script will run tests against node projects specified either via
 # command line arguments or via environment variable NODE_PROJECTS
