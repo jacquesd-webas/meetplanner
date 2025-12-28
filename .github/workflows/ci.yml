@@ -231,14 +231,13 @@ jobs:
           restore-keys: |
             web-build-
 
-      - name: Prepare web bundle
+      - name: Verify web bundle exists
         run: |
-          FILE=$(ls dist/*.tgz | head -n 1)
-          if [ -z "$FILE" ]; then
-            echo "No cached web bundle found in dist/"
+          ls -l dist || true
+          if ! ls dist/*.tgz >/dev/null 2>&1; then
+            echo "No cached web bundle found in dist/ (expected *.tgz)."
             exit 1
           fi
-          cp "$FILE" web-build.tar.gz
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3

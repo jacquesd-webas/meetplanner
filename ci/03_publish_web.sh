@@ -26,14 +26,17 @@ if [ -z $WEB_HOST ]; then
   exit 1
 fi
 
-ARCHIVE_NAME="${APP_NAME}-web-${VERSION}.tgz"
+echo "Publishing web archives..."
+for DIR in $WEB_PROJECTS; do
+    echo "Publishing $DIR..."
+    cd $DIR
+    WAR_FILE="${APP_NAME}-${DIR}-${VERSION}.tgz"
+    if [ ! -f "$CI_DIR/../dist/${WAR_FILE}" ]; then
+      echo "Web archive $WAR_FILE not found in dist directory."
+      exit 1
+    fi
+    echo "Uploading $WAR_FILE to ${WEB_HOST}:${WEB_STAGE_DIR}/${WAR_FILE}"
+    scp $SSH_ARGS $CI_DIR/../dist/${WAR_FILE} ${WEB_USER}@${WEB_HOST}:./${WEB_STAGE_DIR}/${WAR_FILE}
+    echo "Web bundle uploaded."
+done
 
-if [ ! -f "$CI_DIR/../dist/${APP_NAME}-web-${VERSION}.tgz" ]; then
-  echo "web-build.tgz not found in current directory."
-  exit 1
-fi
-
-echo "Uploading web bundle to ${WEB_HOST}:${WEB_STAGE_DIR}/${ARCHIVE_NAME}"
-scp $SSH_ARGS $CI_DIR/../dist/${ARCHIVE_NAME} ${WEB_USER}@${WEB_HOST}:./${WEB_STAGE_DIR}/${ARCHIVE_NAME}
-
-echo "Web bundle uploaded."
