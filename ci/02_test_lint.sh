@@ -13,7 +13,6 @@ source $(dirname $0)/config.sh
 source $(dirname $0)/utils.sh
 
 NODE_PROJECTS_ARGS=$@
-
 if [ ! -z "$NODE_PROJECTS_ARGS" ]; then
     echo "NODE_PROJECTS set via args [$NODE_PROJECTS_ARGS]"
     NODE_PROJECTS=$NODE_PROJECTS_ARGS
@@ -24,6 +23,9 @@ else
     echo "Nothing to test"
     exit 0
 fi
+
+ENVIRONMENT=${ENVIRONMENT:-development}
+echo "Using environment: ${ENVIRONMENT}"
 
 for DIR in $NODE_PROJECTS; do
     echo "Linting $DIR..."

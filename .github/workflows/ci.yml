@@ -10,6 +10,7 @@ on:
 env:
   DOCKER_IMAGES: api db_migrate web
   WEB_ARCHIVES: web
+  NODE_PROJECTS: api web
   CI_REGISTRY_HOST: ${{ vars.CI_REGISTRY_HOST }}
   CI_REGISTRY_USER: ${{ vars.CI_REGISTRY_USER }}
   CI_REGISTRY_PAT: ${{ secrets.CI_REGISTRY_PAT }}
