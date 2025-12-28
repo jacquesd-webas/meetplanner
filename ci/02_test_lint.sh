@@ -33,7 +33,11 @@ for DIR in $NODE_PROJECTS; do
     echo "Linting $DIR..."
     cd $DIR
     NPM=$(get_package_manager)
-    $NPM install
-    $NPM lint
+    if node -e "const s=require('./package.json').scripts||{};process.exit(s.lint?0:1)"; then
+      $NPM install
+      $NPM lint
+    else
+      echo "No lint script defined in $DIR/package.json, skipping."
+    fi
     cd $OLDPWD
 done
