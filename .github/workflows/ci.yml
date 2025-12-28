@@ -248,4 +248,4 @@ jobs:
       - name: Upload web bundle to staging
         run: |
           WEB_STAGE_DIR=${WEB_STAGE_DIR} WEB_HOST=${WEB_HOST} WEB_USER=${WEB_USER} \
-            sh ./ci/04_publish_web.sh ${{ needs.metadata.outputs.version }}
+            sh ./ci/03_publish_web.sh ${{ needs.metadata.outputs.version }}
