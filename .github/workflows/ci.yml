@@ -168,20 +168,13 @@ jobs:
           restore-keys: |
             pnpm-store-tests-${{ runner.os }}-
 
-      - name: Install API dependencies
-        working-directory: api
-        run: pnpm install --frozen-lockfile
-
-      - name: Build API
-        working-directory: api
-        run: pnpm run build
-
-      - name: Build web via ci/01_build_web.sh
+      - name: Run linter
         env:
           ENVIRONMENT: ${{ env.GITHUB_ENVIRONMENT != '' && env.GITHUB_ENVIRONMENT || (needs.metadata.outputs.is_release_tag == 'true' && 'production' || 'development') }}
           VERSION: ${{ needs.metadata.outputs.version }}
         run: |
-          ci/01_build_web.sh web
+          ci/02_test_list.sh
+          ci/02_test_node.sh
 
   publish-docker:
     runs-on: ubuntu-latest
