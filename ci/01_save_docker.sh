@@ -32,6 +32,6 @@ for IMAGE in $DOCKER_IMAGES; do
     IMAGES="$IMAGES ${APP_NAME}_$IMAGE:latest"
 done
 
-echo "Saving images to ${DIST_DIR}/docker-images-latest.tar.gz: $IMAGES"
-docker save $IMAGES | gzip > ${DIST_DIR}/docker-images-latest.tar.gz
+echo "Saving images to ${DIST_DIR}/docker-images.tar: $IMAGES"
+docker save $IMAGES -o ${DIST_DIR}/docker-images.tar
 echo "Saved docker images."
