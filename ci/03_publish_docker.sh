@@ -38,8 +38,12 @@ fi
 echo "Publishing Docker images for version $VERSION..."
 
 for IMAGE in $DOCKER_IMAGES; do
-  docker tag $IMAGE "${IMAGE_PREFIX}_${IMAGE}:$VERSION"
-  docker tag $IMAGE "${IMAGE_PREFIX}_${IMAGE}:latest"
+  SRC="${APP_NAME}_${IMAGE}:latest"
+  if ! docker image inspect "$SRC" >/dev/null 2>&1; then
+    SRC="$IMAGE:latest"
+  fi
+  docker tag "$SRC" "${IMAGE_PREFIX}_${IMAGE}:$VERSION"
+  docker tag "$SRC" "${IMAGE_PREFIX}_${IMAGE}:latest"
 done
 
 for IMAGE in $DOCKER_IMAGES; do

@@ -32,25 +32,7 @@ jobs:
       - name: Verify required env/vars.list and env/secrets.list are set
         shell: bash
         run: |
-          missing=0
-          for file in env/vars.list env/secrets.list; do
-            while IFS= read -r raw || [ -n "$raw" ]; do
-              line="${raw%%#*}"
-              line="${line#"${line%%[![:space:]]*}"}"
-              line="${line%"${line##*[![:space:]]}"}"
-              [ -z "$line" ] && continue
-              var="$line"
-              val="${!var}"
-              if [ -z "$val" ]; then
-                echo "::error file=$file::Environment variable '$var' is not set"
-                missing=1
-              fi
-            done < "$file"
-          done
-          if [ "$missing" -ne 0 ]; then
-            echo "One or more required variables are missing."
-            exit 1
-          fi
+          ci/00_check_vars.sh
 
       - name: Determine version
         id: set-version
@@ -89,26 +71,27 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Restore buildx cache
+      - name: Cache dist artifacts
         uses: actions/cache@v4
         with:
-          path: /tmp/.buildx-cache
-          key: buildx-${{ runner.os }}-${{ github.sha }}
+          path: dist
+          key: dist-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
-            buildx-${{ runner.os }}-
+            dist-${{ runner.os }}-
           retention-days: 1
 
-      - name: Build images via ci/01_build_docker.sh
+      - name: Build docker images
         env:
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
-          BUILDX_CACHE_FROM: type=local,src=/tmp/.buildx-cache
-          BUILDX_CACHE_TO: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          BUILDX_CACHE_FROM: type=gha,scope=buildx
+          BUILDX_CACHE_TO: type=gha,scope=buildx,mode=max
         run: |
-          mkdir -p /tmp/.buildx-cache /tmp/.buildx-cache-new
           ci/01_build_docker.sh ${{ env.DOCKER_IMAGES }}
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Save docker images to dist
+        run: |
+          ci/01_save_docker.sh ${{ env.DOCKER_IMAGES }}
 
   build-web:
     runs-on: ubuntu-latest
@@ -116,9 +99,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Enable pnpm
         run: corepack enable
@@ -134,13 +114,12 @@ jobs:
           key: pnpm-store-build-${{ runner.os }}-${{ hashFiles('web/pnpm-lock.yaml') }}
           restore-keys: |
             pnpm-store-build-${{ runner.os }}-
-          retention-days: 1
 
-      - name: Build web via ci/01_build_web.sh
+      - name: Build web tarball
         env:
           VERSION: ${{ needs.metadata.outputs.version }}
         run: |
-          ci/01_build_web.sh web
+          ci/01_build_web.sh ${{ env.WEB_ARCHIVES }}
 
       - name: Cache web build output
         uses: actions/cache@v4
@@ -149,7 +128,6 @@ jobs:
           key: web-build-${{ github.sha }}
           restore-keys: |
             web-build-
-          retention-days: 1
 
   tests:
     runs-on: ubuntu-latest
@@ -165,7 +143,6 @@ jobs:
           key: buildx-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             buildx-${{ runner.os }}-
-          retention-days: 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -186,7 +163,6 @@ jobs:
           key: pnpm-store-tests-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             pnpm-store-tests-${{ runner.os }}-
-          retention-days: 1
 
       - name: Install API dependencies
         working-directory: api
@@ -213,54 +189,27 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Restore buildx cache
+      - name: Restore dist cache (docker images)
         uses: actions/cache@v4
         with:
-          path: /tmp/.buildx-cache
-          key: buildx-${{ runner.os }}-${{ github.sha }}
+          path: dist
+          key: dist-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
-            buildx-${{ runner.os }}-
+            dist-${{ runner.os }}-
           retention-days: 1
 
-      - name: Login to registry
-        env:
-          REG_HOST: ${{ env.CI_REGISTRY_HOST }}
-          REG_USER: ${{ vars.CI_REGISTRY_USER }}
-          REG_PAT: ${{ secrets.CI_REGISTRY_PAT }}
-        shell: bash
+      - name: Load cached docker images if present
         run: |
-          if [ -z "$REG_HOST" ] || [ -z "$REG_USER" ] || [ -z "$REG_PAT" ]; then
-            echo "::error::Registry host/user/token not configured"
-            exit 1
+          if [ -f dist/docker-images.tar ]; then
+            docker load -i dist/docker-images.tar
+          else
+            echo "No cached docker images found; skipping load."
           fi
-          echo "$REG_PAT" | docker login "$REG_HOST" -u "$REG_USER" --password-stdin
 
-      - name: Build and push api image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./api
-          push: true
-          tags: |
-            ${{ vars.CI_REGISTRY_HOST }}/fringecoding/adventuremeets_api:${{ needs.metadata.outputs.version }}
-            ${{ vars.CI_REGISTRY_HOST }}/fringecoding/adventuremeets_api:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-
-      - name: Build and push backup_runner image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backup_runner
-          push: true
-          tags: |
-            ${{ vars.CI_REGISTRY_HOST }}/fringecoding/adventuremeets_backup_runner:${{ needs.metadata.outputs.version }}
-            ${{ vars.CI_REGISTRY_HOST }}/fringecoding/adventuremeets_backup_runner:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-
-      - name: Persist buildx cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      - name: Publish images via ci/03_publish_docker.sh
+        env:
+          VERSION: ${{ needs.metadata.outputs.version }}
+        run: ci/03_publish_docker.sh ${{ env.DOCKER_IMAGES }}
 
   publish-web:
     runs-on: ubuntu-latest
@@ -281,7 +230,6 @@ jobs:
           key: web-build-${{ github.sha }}
           restore-keys: |
             web-build-
-          retention-days: 1
 
       - name: Prepare web bundle
         run: |
@@ -299,6 +247,5 @@ jobs:
 
       - name: Upload web bundle to staging
         run: |
-          cp web-artifacts/web-build.tar.gz .
           WEB_STAGE_DIR=${WEB_STAGE_DIR} WEB_HOST=${WEB_HOST} WEB_USER=${WEB_USER} \
             sh ./ci/04_publish_web.sh ${{ needs.metadata.outputs.version }}

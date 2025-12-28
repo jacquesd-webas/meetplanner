@@ -13,6 +13,9 @@
 CI_DIR=$(dirname $0)
 source $CI_DIR/config.sh
 source $CI_DIR/utils.sh
+IS_CI=${CI:-false}
+
+APP_NAME=$(get_app_name "${APP_NAME:-}")
 
 DOCKER_IMAGES_ARGS=$@
 
@@ -31,17 +34,29 @@ fi
 
 # Build with Buildx/Bake so we can use cache across steps/jobs.
 COMPOSE_FILE=${COMPOSE_FILE:-docker-compose.yml}
-CACHE_FROM=${BUILDX_CACHE_FROM:-type=local,src=/tmp/.buildx-cache}
-CACHE_TO=${BUILDX_CACHE_TO:-type=local,dest=/tmp/.buildx-cache-new,mode=max}
+TAG_ARGS=""
+for IMAGE in $DOCKER_IMAGES; do
+  TAG_ARGS="$TAG_ARGS --set ${IMAGE}.tags=${APP_NAME}_${IMAGE}:latest"
+done
+if [ "$IS_CI" = "true" ]; then
+  CACHE_FROM=${BUILDX_CACHE_FROM:-type=local,src=/tmp/.buildx-cache}
+  CACHE_TO=${BUILDX_CACHE_TO:-type=local,dest=/tmp/.buildx-cache-new,mode=max}
+  ARGS="--set *.cache-from=${CACHE_FROM} --set *.cache-to=${CACHE_TO} ${TAG_ARGS} --set *.output=type=docker"
+else
+  ARGS="${TAG_ARGS} --set *.output=type=docker"
+  CACHE_FROM="type=inline"
+  CACHE_TO="type=inline"
+fi
 
 echo "Building Docker images via buildx bake from ${COMPOSE_FILE}..."
-echo "Cache from: ${CACHE_FROM}"
-echo "Cache to:   ${CACHE_TO}"
+if [ ! -z "$ARGS" ]; then
+  echo "Cache from: ${CACHE_FROM}"
+  echo "Cache to:   ${CACHE_TO}"
+fi
+
 docker buildx bake \
   -f "${COMPOSE_FILE}" \
   ${DOCKER_IMAGES} \
-  --set *.cache-from="${CACHE_FROM}" \
-  --set *.cache-to="${CACHE_TO}" \
-  --load
+  ${ARGS}
 
 echo "Docker build completed"

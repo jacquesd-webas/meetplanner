@@ -1,5 +1,5 @@
 {
-  "name": "@meetplanner/api",
+  "name": "@adventuremeets/api",
   "version": "0.1.0",
   "private": true,
   "type": "commonjs",
