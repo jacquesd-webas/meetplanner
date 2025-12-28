@@ -43,6 +43,7 @@ type MeetApi = {
   status_id?: number;
   organizer?: string;
   organizer_name?: string;
+  organizerName?: string;
   organizer_first_name?: string;
   organizer_last_name?: string;
   organizerFirstName?: string;
@@ -104,6 +105,7 @@ function mapMeet(apiMeet: MeetApi): MeetSignupSheet {
     ]
       .filter(Boolean)
       .join(" ") ||
+    apiMeet.organizerName ||
     apiMeet.organizer ||
     apiMeet.organizer_name ||
     "TBD";

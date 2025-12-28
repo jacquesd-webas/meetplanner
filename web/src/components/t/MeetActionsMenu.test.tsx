@@ -35,6 +35,7 @@ describe("MeetActionsMenu", () => {
     const onAttendees = vi.fn();
     const onPostpone = vi.fn();
     const onCloseMeet = vi.fn();
+    const onEdit = vi.fn();
     const onPreview = vi.fn();
     const onDelete = vi.fn();
     render(
@@ -44,16 +45,19 @@ describe("MeetActionsMenu", () => {
         onAttendees={onAttendees}
         onPostpone={onPostpone}
         onCloseMeet={onCloseMeet}
+        onEdit={onEdit}
         onPreview={onPreview}
         onDelete={onDelete}
       />
     );
     openMenu();
+    fireEvent.click(screen.getByText("Edit"));
     fireEvent.click(screen.getByText("Attendees"));
     fireEvent.click(screen.getByText("Postpone"));
     fireEvent.click(screen.getByText("Close meet"));
     fireEvent.click(screen.getByText("Preview"));
     fireEvent.click(screen.getByText("Cancel"));
+    expect(onEdit).toHaveBeenCalledWith("3");
     expect(onAttendees).toHaveBeenCalledWith("3");
     expect(onPostpone).toHaveBeenCalledWith("3");
     expect(onCloseMeet).toHaveBeenCalledWith("3");

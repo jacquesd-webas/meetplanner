@@ -654,7 +654,7 @@ function MeetSignupSheet() {
                   <Typography
                     variant="body1"
                     color="text.secondary"
-                    sx={{ mt: 1 }}
+                    sx={{ mt: 1, whiteSpace: "pre-line" }}
                   >
                     {meet.description}
                   </Typography>
@@ -694,7 +694,7 @@ function MeetSignupSheet() {
                       </Stack>
                     )}
                   </Stack>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography variant="body1" color="text.secondary" sx={{ whiteSpace: "pre-line" }}>
                     {meet.description}
                   </Typography>
                 </>
