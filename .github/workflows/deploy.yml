@@ -31,29 +31,51 @@ jobs:
 
       - name: Stage CI/CD Variables
         shell: bash
+        env:
+          VARS_JSON: ${{ toJson(vars) }}
         run: |
-          echo "CI_REGISTRY_HOST=${{ vars.CI_REGISTRY_HOST }}" >> $GITHUB_ENV
-          echo "CI_REGISTRY_USER=${{ vars.CI_REGISTRY_USER }}" >> $GITHUB_ENV
-          echo "DB_HOST=${{ vars.DB_HOST }}" >> $GITHUB_ENV
-          echo "DB_USER=${{ vars.DB_USER }}" >> $GITHUB_ENV
-          echo "EMAIL_FROM_ADDRESS=${{ vars.EMAIL_FROM_ADDRESS }}" >> $GITHUB_ENV
-          echo "EMAIL_FROM_NAME=${{ vars.EMAIL_FROM_NAME }}" >> $GITHUB_ENV
-          echo "EMAIL_HOST=${{ vars.EMAIL_HOST }}" >> $GITHUB_ENV
-          echo "EMAIL_PORT=${{ vars.EMAIL_PORT }}" >> $GITHUB_ENV
-          echo "EMAIL_SECURE=${{ vars.EMAIL_SECURE }}" >> $GITHUB_ENV
-          echo "EMAIL_USER=${{ vars.EMAIL_USER }}" >> $GITHUB_ENV
-          echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >> $GITHUB_ENV
+          set -e
+          file="env/vars.list"
+          if [ ! -f "$file" ]; then
+            echo "::error file=$file::vars.list not found"
+            exit 1
+          fi
+          while IFS= read -r raw || [ -n "$raw" ]; do
+            line="${raw%%#*}"
+            line="${line#"${line%%[![:space:]]*}"}"
+            line="${line%"${line##*[![:space:]]}"}"
+            [ -z "$line" ] && continue
+            val=$(printf '%s' "$VARS_JSON" | jq -r --arg k "$line" '.[$k] // empty')
+            if [ -z "$val" ]; then
+              echo "::error file=$file::Variable '$line' not set in GitHub vars"
+              exit 1
+            fi
+            echo "$line=$val" >> "$GITHUB_ENV"
+          done < "$file"
 
       - name: Stage Secrets
         shell: bash
+        env:
+          SECRETS_JSON: ${{ toJson(secrets) }}
         run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-          echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> $GITHUB_ENV
-          echo "ENCODED_SSH_KEY=${{ secrets.ENCODED_SSH_KEY }}" >> $GITHUB_ENV
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
-          echo "CI_REGISTRY_PAT=${{ secrets.CI_REGISTRY_PAT }}" >> $GITHUB_ENV
+          set -e
+          file="env/secrets.list"
+          if [ ! -f "$file" ]; then
+            echo "::error file=$file::secrets.list not found"
+            exit 1
+          fi
+          while IFS= read -r raw || [ -n "$raw" ]; do
+            line="${raw%%#*}"
+            line="${line#"${line%%[![:space:]]*}"}"
+            line="${line%"${line##*[![:space:]]}"}"
+            [ -z "$line" ] && continue
+            val=$(printf '%s' "$SECRETS_JSON" | jq -r --arg k "$line" '.[$k] // empty')
+            if [ -z "$val" ]; then
+              echo "::error file=$file::Secret '$line' not set in GitHub secrets"
+              exit 1
+            fi
+            echo "$line=$val" >> "$GITHUB_ENV"
+          done < "$file"
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3
