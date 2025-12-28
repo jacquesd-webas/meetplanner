@@ -1,10 +1,17 @@
 #!/bin/sh
 
-# Save built docker images to dist/docker-images.tar
+# This script will save built docker images specified either via
+# command line arguments or via environment variable DOCKER_IMAGES
+#
+# usage:
+#   ci/01_save_docker.sh web web-admin
+#   DOCKER_IMAGES="web web-admin" ci/01_save_docker.sh
+
+set -eu
 
 CI_DIR=$(dirname $0)
 . "$CI_DIR/config.sh"
-. $CI_DIR/utils.sh
+. "$CI_DIR/utils.sh"
 
 APP_NAME=$(get_app_name "${APP_NAME:-}")
 

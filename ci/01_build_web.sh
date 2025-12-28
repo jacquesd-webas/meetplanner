@@ -7,8 +7,10 @@
 # environment variable, which may be set in ci/config.sh
 #
 # usage:
-#   ci/01_build_war.sh web web-admin
-#   WEB_PROJECTS="web web-admin" ci/01_build_war.sh
+#   ci/01_build_web.sh web web-admin
+#   WEB_PROJECTS="web web-admin" ci/01_build_web.sh
+
+set -eu
 
 CI_DIR=$(dirname $0)
 . $CI_DIR/config.sh

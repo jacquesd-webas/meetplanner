@@ -9,6 +9,8 @@
 #   ci/02_test_node.sh api common
 #   NODE_PROJECTS="api common" ci/02_test_node.sh
 
+set -eu
+
 . $(dirname $0)/config.sh
 . $(dirname $0)/utils.sh
 

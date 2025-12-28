@@ -1,5 +1,7 @@
 #!/bin/sh 
 
+set -eu
+
 CI_DIR=$(dirname $0)
 . $CI_DIR/config.sh
 . $CI_DIR/utils.sh
