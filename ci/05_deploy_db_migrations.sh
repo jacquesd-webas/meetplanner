@@ -1,6 +1,6 @@
 #!/bin/sh 
 
-set -eu
+set -e
 
 CI_DIR=$(dirname $0)
 . $CI_DIR/config.sh

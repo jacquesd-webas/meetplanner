@@ -10,7 +10,7 @@
 #   ci/01_build_web.sh web web-admin
 #   WEB_PROJECTS="web web-admin" ci/01_build_web.sh
 
-set -eu
+set -e
 
 CI_DIR=$(dirname $0)
 . $CI_DIR/config.sh

@@ -3,8 +3,8 @@
 # Script to tag and push Docker images
 # Assumes images are already built and loaded locally and docker login has been performed.
 
- set -eu
- 
+ set -e
+
 CI_DIR=$(dirname $0)
 . "$CI_DIR/config.sh"
 . "$CI_DIR/utils.sh"

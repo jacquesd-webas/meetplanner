@@ -2,7 +2,7 @@
 
 # Script to update the stack definition file on the remote webapp server
 
-set -eu
+set -e
 
 CI_DIR=$(dirname $0)
 . $CI_DIR/config.sh

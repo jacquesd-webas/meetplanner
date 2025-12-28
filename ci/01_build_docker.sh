@@ -10,7 +10,7 @@
 #   ci/01_build_docker.sh api db_migrate
 #   DOCKER_IMAGES="api db_migrate" ci/01_build_docker.sh
 
-set -eu
+set -e
 
 CI_DIR=$(dirname $0)
 . "$CI_DIR/config.sh"

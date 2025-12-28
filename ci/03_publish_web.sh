@@ -3,7 +3,7 @@
 # Script to upload the built web tarball to the staging directory on the deployment host.
 # Requires web-build.tar.gz artifact present at build time.
 
-set -eu
+set -e
 
 CI_DIR=$(dirname $0)
 . $CI_DIR/config.sh
