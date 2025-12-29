@@ -130,6 +130,12 @@ export class MeetDto {
   organizerName?: string;
 
   @ApiPropertyOptional()
+  organizerFirstName?: string;
+
+  @ApiPropertyOptional()
+  organizerLastName?: string;
+
+  @ApiPropertyOptional()
   imageUrl?: string;
 
   @ApiPropertyOptional()
