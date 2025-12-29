@@ -11,12 +11,14 @@ import {
   TextField,
   MenuItem,
   Alert,
+  IconButton,
 } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PlaceIcon from "@mui/icons-material/Place";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import { useParams, useSearchParams } from "react-router-dom";
+import LinkIcon from "@mui/icons-material/Link";
 import { useEffect, useState } from "react";
 import { MeetNotFound } from "../components/MeetNotFound";
 import { MeetStatus } from "../constants/meetStatus";
@@ -135,7 +137,7 @@ function MeetSignupFormFields({
   setField,
   setMetaValue,
   setPhoneCountry,
-  setPhoneLocal,
+  setPhoneLocal
 }: MeetSignupFormProps) {
   return (
     <Stack spacing={2} mt={2}>
@@ -398,6 +400,8 @@ function MeetSignupSheet() {
   const imageUrl = meet?.imageUrl || null;
   const hasImage = Boolean(imageUrl);
   const isOpenMeet = meet?.status_id === MeetStatus.Open;
+  const shareLink =
+    typeof window !== "undefined" ? `${window.location.origin}/meets/${code}` : "";
 
   if (!isLoading && !meet) {
     return <MeetNotFound />;
@@ -593,9 +597,28 @@ function MeetSignupSheet() {
                 <Typography variant="h4" fontWeight={700}>
                   {meet.name}
                 </Typography>
-                <Button variant="outlined" size="small" href="/login">
-                  Login
-                </Button>
+                {isPreview ? (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<LinkIcon fontSize="small" />}
+                    aria-label="Copy share link"
+                    onClick={async () => {
+                      if (!shareLink) return;
+                      try {
+                        await navigator.clipboard.writeText(shareLink);
+                      } catch (err) {
+                        console.error("Failed to copy share link", err);
+                      }
+                    }}
+                  >
+                    Copy link
+                  </Button>
+                ) : (
+                  <Button variant="outlined" size="small" href="/login">
+                    Login
+                  </Button>
+                )}
               </Stack>
               {dateLabel && (
                 <Typography variant="subtitle1" color="text.secondary">

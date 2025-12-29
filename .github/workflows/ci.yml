@@ -19,6 +19,8 @@ env:
   MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
   MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  VITE_RECAPTCHA_SITE_KEY: ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
+  RECAPTCHA_SECRET: ${{ secrets.RECAPTCHA_SECRET }}
 
 jobs:
   metadata:
