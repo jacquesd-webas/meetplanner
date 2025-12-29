@@ -22,8 +22,16 @@ export class MeetsService {
       .select('meet_id')
       .count<{ meet_id: string; attendee_count: number; waitlist_count: number; checked_in_count: number; confirmed_count: number }[]>('* as attendee_count')
       .select(this.db.getClient().raw(`sum(case when status = 'waitlisted' then 1 else 0 end) as waitlist_count`))
-      .select(this.db.getClient().raw(`sum(case when status in ('confirmed', 'checked-in') then 1 else 0 end) as confirmed_count`))
-      .select(this.db.getClient().raw(`sum(case when status = 'checked-in' then 1 else 0 end) as checked_in_count`))
+      .select(
+        this.db
+          .getClient()
+          .raw(`sum(case when status in ('confirmed', 'checked-in', 'attended') then 1 else 0 end) as confirmed_count`),
+      )
+      .select(
+        this.db
+          .getClient()
+          .raw(`sum(case when status in ('checked-in', 'attended') then 1 else 0 end) as checked_in_count`),
+      )
       .groupBy('meet_id')
       .as('ma');
     const query = this.db
@@ -81,8 +89,16 @@ export class MeetsService {
       .select('meet_id')
       .count<{ meet_id: string; attendee_count: number; waitlist_count: number; checked_in_count: number; confirmed_count: number }[]>('* as attendee_count')
       .select(this.db.getClient().raw(`sum(case when status = 'waitlisted' then 1 else 0 end) as waitlist_count`))
-      .select(this.db.getClient().raw(`sum(case when status in ('confirmed', 'checked-in') then 1 else 0 end) as confirmed_count`))
-      .select(this.db.getClient().raw(`sum(case when status = 'checked-in' then 1 else 0 end) as checked_in_count`))
+      .select(
+        this.db
+          .getClient()
+          .raw(`sum(case when status in ('confirmed', 'checked-in', 'attended') then 1 else 0 end) as confirmed_count`),
+      )
+      .select(
+        this.db
+          .getClient()
+          .raw(`sum(case when status in ('checked-in', 'attended') then 1 else 0 end) as checked_in_count`),
+      )
       .groupBy('meet_id')
       .as('ma');
     let query = this.db
@@ -95,6 +111,7 @@ export class MeetsService {
         'c.symbol as currency_symbol',
         'c.code as currency_code',
         this.db.getClient().raw('coalesce(ma.attendee_count, 0) as attendee_count'),
+        this.db.getClient().raw('coalesce(ma.confirmed_count, 0) as confirmed_count'),
         this.db.getClient().raw('coalesce(ma.waitlist_count, 0) as waitlist_count'),
         this.db.getClient().raw('coalesce(ma.checked_in_count, 0) as checked_in_count'),
         this.db.getClient().raw(`concat(coalesce(u.first_name, ''), ' ', coalesce(u.last_name, '')) as organizer_name`),
@@ -195,7 +212,7 @@ export class MeetsService {
       .getClient()('meet_attendees')
       .where({ meet_id: meetId });
     if (filter === 'accepted') {
-      attendeesQuery.whereIn('status', ['confirmed', 'checked-in']);
+      attendeesQuery.whereIn('status', ['confirmed', 'checked-in', 'attended']);
     }
     const attendees = await attendeesQuery
       .orderBy([{ column: 'sequence', order: 'asc' }, { column: 'created_at', order: 'asc' }])
