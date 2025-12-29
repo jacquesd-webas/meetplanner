@@ -147,6 +147,9 @@ export class MeetDto {
   @ApiPropertyOptional()
   confirmedCount?: number;
 
+  @ApiPropertyOptional()
+  checkedInCount?: number;
+
   @ApiPropertyOptional({ type: [MeetMetaDefinitionDto] })
   metaDefinitions?: MeetMetaDefinitionDto[];
 }
