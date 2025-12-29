@@ -87,20 +87,20 @@ export function MeetActionsMenu({
             <ListItemText>Open meet</ListItemText>
           </MenuItem>
         ) : null}
-        {!isCompleted(statusId) && shouldShowEdit(statusId) ? (
-          <MenuItem onClick={(event) => handleAction(event, onEdit)}>
-            <ListItemIcon>
-              <EditOutlinedIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Edit</ListItemText>
-          </MenuItem>
-        ) : null}
         {!isCompleted(statusId) && (shouldShowAttendees(statusId) || isClosed(statusId)) ? (
           <MenuItem onClick={(event) => handleAction(event, onAttendees)}>
             <ListItemIcon>
               <PeopleOutlineIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText>Attendees</ListItemText>
+          </MenuItem>
+        ) : null}
+        {!isCompleted(statusId) && shouldShowEdit(statusId) ? (
+          <MenuItem onClick={(event) => handleAction(event, onEdit)}>
+            <ListItemIcon>
+              <EditOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Edit</ListItemText>
           </MenuItem>
         ) : null}
         {!isCompleted(statusId) && isClosed(statusId) ? (
