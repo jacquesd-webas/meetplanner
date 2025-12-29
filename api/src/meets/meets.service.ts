@@ -87,9 +87,9 @@ export class MeetsService {
         'c.code as currency_code',
         this.db.getClient().raw('coalesce(ma.attendee_count, 0) as attendee_count'),
         this.db.getClient().raw('coalesce(ma.waitlist_count, 0) as waitlist_count'),
-        this.db.getClient().raw(
-          `trim(concat(coalesce(u.idp_profile->>'firstName', u.email), ' ', coalesce(u.idp_profile->>'lastName', ''))) as organizer_name`,
-        ),
+        this.db.getClient().raw(`concat(coalesce(u.first_name, ''), ' ', coalesce(u.last_name, '')) as organizer_name`),
+        'u.first_name as organizer_first_name',
+        'u.last_name as organizer_last_name'
       );
 
     if (idOrCode.match(/^[0-9a-fA-F-]{36}$/)) {
@@ -442,6 +442,8 @@ export class MeetsService {
       depositCents: meet.deposit_cents != null ? Number(meet.deposit_cents) : undefined,
       shareCode: meet.share_code ?? undefined,
       organizerName: meet.organizer_name ?? undefined,
+      organizerFirstName: meet.organizer_first_name || undefined,
+      organizerLastName: meet.organizer_last_name || undefined,
       imageUrl: meet.image_url ?? meet.imageUrl ?? undefined,
       attendeeCount,
       confirmedCount: attendeeCount,
