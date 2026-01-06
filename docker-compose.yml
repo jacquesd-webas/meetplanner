@@ -91,6 +91,21 @@ services:
     ports:
       - "${WEB_PORT:-5173}:80"
 
+  worker:
+    build:
+      context: .
+      dockerfile: ./worker/Dockerfile
+    env_file:
+      - ./env/base.env
+      - ./env/development.env
+    environment:
+      DB_HOST: db
+      DB_PORT: ${DB_PORT:-5432}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   db_data:
   minio_data:

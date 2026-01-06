@@ -8,6 +8,7 @@
     "start:dev": "pnpm run build && node dist/main.js"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
     "knex": "^2.5.1",
     "pg": "^8.11.3"
   },

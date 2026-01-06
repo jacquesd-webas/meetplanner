@@ -12,6 +12,7 @@ import {
   UploadedFile,
   UseInterceptors,
   BadRequestException,
+  Req,
 } from "@nestjs/common";
 import { ApiBody, ApiHeader, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { MeetsService } from "./meets.service";
@@ -163,7 +164,10 @@ export class MeetsController {
 
   @Patch(":id/status")
   @ApiHeader({ name: "x-api-key", required: false, description: "Worker API key (alternative to Authorization)" })
-  updateStatus(@Param("id") id: string, @Body() dto: UpdateMeetStatusDto) {
+  updateStatus(@Param("id") id: string, @Body() dto: UpdateMeetStatusDto, @User() user?: UserProfile) {
+    if (!user && !(process as any).env?.WORKER_API_KEY) {
+      throw new UnauthorizedException("Unauthorized");
+    }
     return this.meetsService.updateStatus(id, dto.statusId);
   }
 

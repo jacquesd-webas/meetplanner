@@ -1,6 +1,9 @@
+import * as dotenv from "dotenv";
+dotenv.config();
+
 import { runMeetScheduler } from "./tasks/meetScheduler";
 
-const SCHEDULER_INTERVAL_SECONDS = Number(process.env.SCHEDULER_INTERVAL_SECONDS || 10000);
+const SCHEDULER_INTERVAL_SECONDS = (Number(process.env.SCHEDULER_INTERVAL_SECONDS) * 1000) || 10000;
 const MAX_CONSECUTIVE_SKIPS = 3;
 let isRunning = false;
 let consecutiveSkips = 0;
