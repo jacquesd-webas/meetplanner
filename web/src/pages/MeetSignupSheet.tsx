@@ -12,6 +12,8 @@ import {
   MenuItem,
   Alert,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PlaceIcon from "@mui/icons-material/Place";
@@ -138,7 +140,7 @@ function MeetSignupFormFields({
   setField,
   setMetaValue,
   setPhoneCountry,
-  setPhoneLocal
+  setPhoneLocal,
 }: MeetSignupFormProps) {
   return (
     <Stack spacing={2} mt={2}>
@@ -338,6 +340,8 @@ function MeetSignupSheet() {
   const { addAttendeeAsync, isLoading: isSubmitting } = useAddAttendee();
   const { checkAttendeeAsync } = useCheckMeetAttendee();
   const api = useApi();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [submitted, setSubmitted] = useState(false);
   const [existingAttendee, setExistingAttendee] = useState<{
     id: string;
@@ -399,9 +403,11 @@ function MeetSignupSheet() {
 
   const imageUrl = meet?.imageUrl || null;
   const hasImage = Boolean(imageUrl);
-  const isOpenMeet = meet?.status_id === MeetStatus.Open;
+  const isOpenMeet = meet?.statusId === MeetStatus.Open;
   const shareLink =
-    typeof window !== "undefined" ? `${window.location.origin}/meets/${code}` : "";
+    typeof window !== "undefined"
+      ? `${window.location.origin}/meets/${code}`
+      : "";
   const costLabel =
     typeof meet?.costCents === "number"
       ? `${meet?.currencySymbol || ""}${(meet.costCents / 100).toFixed(2)}`
@@ -578,16 +584,26 @@ function MeetSignupSheet() {
         </Box>
       ) : null}
       <Container
-        maxWidth="md"
+        maxWidth={isMobile ? false : "md"}
+        disableGutters={isMobile}
         sx={{
-          py: 6,
-          pt: isPreview ? 10 : 6,
-          height: "100vh",
+          py: isMobile ? 0 : 6,
+          pt: isPreview ? (isMobile ? 10 : 6) : isMobile ? 2 : 6,
+          minHeight: "100vh",
+          height: "100%",
           overflowY: "auto",
           WebkitOverflowScrolling: "touch",
         }}
       >
-        <Paper variant="outlined" sx={{ p: 3 }}>
+        <Paper
+          variant="outlined"
+          sx={{
+            p: isMobile ? 2 : 3,
+            minHeight: "100%",
+            borderRadius: isMobile ? 0 : 2,
+            boxShadow: isMobile ? "none" : undefined,
+          }}
+        >
           {isLoading ? (
             <Typography color="text.secondary">Loading meet...</Typography>
           ) : (
@@ -678,7 +694,10 @@ function MeetSignupSheet() {
                       )}
                       {costLabel && (
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <AttachMoneyOutlinedIcon fontSize="small" color="disabled" />
+                          <AttachMoneyOutlinedIcon
+                            fontSize="small"
+                            color="disabled"
+                          />
                           <Typography variant="body2">{costLabel}</Typography>
                         </Stack>
                       )}
@@ -728,17 +747,24 @@ function MeetSignupSheet() {
                     )}
                     {costLabel && (
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <AttachMoneyOutlinedIcon fontSize="small" color="disabled" />
+                        <AttachMoneyOutlinedIcon
+                          fontSize="small"
+                          color="disabled"
+                        />
                         <Typography variant="body2">{costLabel}</Typography>
                       </Stack>
                     )}
                   </Stack>
-                  <Typography variant="body1" color="text.secondary" sx={{ whiteSpace: "pre-line" }}>
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{ whiteSpace: "pre-line" }}
+                  >
                     {meet.description}
                   </Typography>
                 </>
               )}
-              {!isPreview && <MeetStatusAlert statusId={meet.status_id} />}
+              {!isPreview && <MeetStatusAlert statusId={meet.statusId} />}
               {(isOpenMeet || isPreview) && (
                 <MeetSignupFormFields
                   meet={meet}

@@ -1,4 +1,10 @@
-import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
+import {
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+} from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
@@ -10,10 +16,14 @@ import PauseCircleOutlineIcon from "@mui/icons-material/PauseCircleOutline";
 import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
 import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import { MouseEvent, useState } from "react";
+import { PendingAction } from "./MeetActionsDialogs";
+import MeetStatusEnum from "../models/MeetStatusEnum";
 
 type MeetActionsMenuProps = {
   meetId: string;
   statusId?: number;
+  setSelectedMeetId: (meetId: string | null) => void;
+  setPendingAction: (action: PendingAction | null) => void;
   onEdit?: (meetId: string) => void;
   onPreview?: (meetId: string) => void;
   onDelete?: (meetId: string) => void;
@@ -25,28 +35,58 @@ type MeetActionsMenuProps = {
   onCloseMeet?: (meetId: string) => void;
 };
 
-// Allow editing for draft, published, postponed, and open meets
-const shouldShowEdit = (statusId?: number) => statusId === 1 || statusId === 2 || statusId === 3 || statusId === 6;
-const shouldShowAttendees = (statusId?: number) => statusId === 3;
-const shouldShowReports = (statusId?: number) => statusId === 5 || statusId === 7;
-const isDraft = (statusId?: number) => statusId === 1;
-const isPublished = (statusId?: number) => statusId === 2;
-const isOpen = (statusId?: number) => statusId === 3;
-const isClosed = (statusId?: number) => statusId === 4;
-const isCompleted = (statusId?: number) => statusId === 7;
+// Helper to decide what to show in the menu
+const shouldShow = (action: PendingAction, statusId: number) => {
+  switch (action) {
+    case "create":
+      return false;
+    case "attendees":
+      return (
+        statusId === MeetStatusEnum.Open ||
+        MeetStatusEnum.Closed ||
+        MeetStatusEnum.Postponed ||
+        MeetStatusEnum.Completed ||
+        MeetStatusEnum.Cancelled
+      );
+    case "open":
+      return statusId === MeetStatusEnum.Published;
+    case "close":
+      return statusId === MeetStatusEnum.Open;
+    case "edit":
+      return (
+        statusId === MeetStatusEnum.Draft ||
+        statusId === MeetStatusEnum.Published ||
+        statusId === MeetStatusEnum.Open ||
+        statusId === MeetStatusEnum.Postponed
+      );
+    case "delete":
+      return statusId === MeetStatusEnum.Draft;
+    case "postpone":
+      return statusId === MeetStatusEnum.Closed || MeetStatusEnum.Open;
+    case "cancel":
+      return (
+        statusId === MeetStatusEnum.Closed ||
+        MeetStatusEnum.Open ||
+        MeetStatusEnum.Postponed
+      );
+    case "checkin":
+      return statusId === MeetStatusEnum.Closed;
+    case "report":
+      return statusId === MeetStatusEnum.Completed;
+    case "preview":
+      return (
+        statusId === MeetStatusEnum.Published ||
+        statusId === MeetStatusEnum.Open ||
+        statusId === MeetStatusEnum.Closed
+      );
+  }
+};
 
 export function MeetActionsMenu({
   meetId,
   statusId,
-  onEdit,
-  onPreview,
-  onDelete,
-  onAttendees,
-  onReports,
-  onPostpone,
-  onOpen,
-  onCheckin,
-  onCloseMeet
+  setSelectedMeetId,
+  setPendingAction,
 }: MeetActionsMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -58,10 +98,16 @@ export function MeetActionsMenu({
 
   const handleClose = () => setAnchorEl(null);
 
-  const handleAction = (event: MouseEvent<HTMLElement>, action?: (meetId: string) => void) => {
+  const handleAction = (
+    event: MouseEvent<HTMLElement>,
+    action: PendingAction,
+    onAction?: (meetId: string) => void
+  ) => {
     event.stopPropagation();
-    if (action) {
-      action(meetId);
+    if (meetId) setSelectedMeetId(meetId);
+    setPendingAction(action);
+    if (typeof onAction === "function") {
+      onAction(meetId);
     }
     handleClose();
   };
@@ -79,86 +125,86 @@ export function MeetActionsMenu({
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         onClick={(event) => event.stopPropagation()}
       >
-        {isPublished(statusId) ? (
-          <MenuItem onClick={(event) => handleAction(event, onOpen)}>
-            <ListItemIcon>
-              <LockOpenOutlinedIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Open meet</ListItemText>
-          </MenuItem>
-        ) : null}
-        {!isCompleted(statusId) && (shouldShowAttendees(statusId) || isClosed(statusId)) ? (
-          <MenuItem onClick={(event) => handleAction(event, onAttendees)}>
+        {shouldShow("attendees", statusId) && (
+          <MenuItem onClick={(event) => handleAction(event, "attendees")}>
             <ListItemIcon>
               <PeopleOutlineIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText>Attendees</ListItemText>
           </MenuItem>
-        ) : null}
-        {!isCompleted(statusId) && shouldShowEdit(statusId) ? (
-          <MenuItem onClick={(event) => handleAction(event, onEdit)}>
+        )}
+        {shouldShow("open", statusId) && (
+          <MenuItem onClick={(event) => handleAction(event, "open")}>
             <ListItemIcon>
-              <EditOutlinedIcon fontSize="small" />
+              <LockOpenOutlinedIcon fontSize="small" />
             </ListItemIcon>
-            <ListItemText>Edit</ListItemText>
+            <ListItemText>Open meet</ListItemText>
           </MenuItem>
-        ) : null}
-        {!isCompleted(statusId) && isClosed(statusId) ? (
-          <MenuItem onClick={(event) => handleAction(event, onCheckin)}>
-            <ListItemIcon>
-              <FactCheckOutlinedIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Check-in</ListItemText>
-          </MenuItem>
-        ) : null}
-        {!isCompleted(statusId) && isOpen(statusId) ? (
-          <MenuItem onClick={(event) => handleAction(event, onPostpone)}>
-            <ListItemIcon>
-              <PauseCircleOutlineIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Postpone</ListItemText>
-          </MenuItem>
-        ) : null}
-        {!isCompleted(statusId) && isOpen(statusId) ? (
-          <MenuItem onClick={(event) => handleAction(event, onCloseMeet)}>
-            <ListItemIcon>
-              <BlockOutlinedIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Close meet</ListItemText>
-          </MenuItem>
-        ) : null}
-        {!isCompleted(statusId) && isClosed(statusId) ? (
-          <MenuItem onClick={(event) => handleAction(event, onPostpone)}>
-            <ListItemIcon>
-              <PauseCircleOutlineIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Postpone</ListItemText>
-          </MenuItem>
-        ) : null}
-        {shouldShowReports(statusId) ? (
-          <MenuItem onClick={(event) => handleAction(event, onReports)}>
-            <ListItemIcon>
-              <AssessmentOutlinedIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Reports</ListItemText>
-          </MenuItem>
-        ) : null}
-        {!isCompleted(statusId) && (isPublished(statusId) || isOpen(statusId)) ? (
-          <MenuItem onClick={(event) => handleAction(event, onPreview)}>
+        )}
+        {shouldShow("preview", statusId) && (
+          <MenuItem onClick={(event) => handleAction(event, "preview")}>
             <ListItemIcon>
               <OpenInNewOutlinedIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText>Preview</ListItemText>
           </MenuItem>
-        ) : null}
-        {!isCompleted(statusId) && (isPublished(statusId) || isOpen(statusId) || isDraft(statusId) || isClosed(statusId)) ? (
-          <MenuItem onClick={(event) => handleAction(event, onDelete)}>
+        )}
+        {shouldShow("edit", statusId) && (
+          <MenuItem onClick={(event) => handleAction(event, "edit")}>
+            <ListItemIcon>
+              <EditOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Edit</ListItemText>
+          </MenuItem>
+        )}
+        {shouldShow("checkin", statusId) && (
+          <MenuItem onClick={(event) => handleAction(event, "checkin")}>
+            <ListItemIcon>
+              <FactCheckOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Check-in</ListItemText>
+          </MenuItem>
+        )}
+        {shouldShow("close", statusId) && (
+          <MenuItem onClick={(event) => handleAction(event, "close")}>
+            <ListItemIcon>
+              <FactCheckOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Close meet</ListItemText>
+          </MenuItem>
+        )}
+        {shouldShow("postpone", statusId) && (
+          <MenuItem onClick={(event) => handleAction(event, "postpone")}>
+            <ListItemIcon>
+              <PauseCircleOutlineIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Postpone</ListItemText>
+          </MenuItem>
+        )}
+        {shouldShow("cancel", statusId) && (
+          <MenuItem onClick={(event) => handleAction(event, "cancel")}>
+            <ListItemIcon>
+              <BlockOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Cancel meet</ListItemText>
+          </MenuItem>
+        )}
+        {shouldShow("report", statusId) && (
+          <MenuItem onClick={(event) => handleAction(event, "report")}>
+            <ListItemIcon>
+              <AssessmentOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Reports</ListItemText>
+          </MenuItem>
+        )}
+        {shouldShow("delete", statusId) && (
+          <MenuItem onClick={(event) => handleAction(event, "delete")}>
             <ListItemIcon>
               <DeleteOutlineIcon fontSize="small" />
             </ListItemIcon>
-            <ListItemText>{isDraft(statusId) ? "Delete" : "Cancel"}</ListItemText>
+            <ListItemText>Delete</ListItemText>
           </MenuItem>
-        ) : null}
+        )}
       </Menu>
     </>
   );

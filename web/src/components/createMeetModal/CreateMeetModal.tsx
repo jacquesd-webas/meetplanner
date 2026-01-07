@@ -11,10 +11,10 @@ import {
   Stepper,
   Typography,
   useMediaQuery,
-  useTheme
+  useTheme,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import ConfirmActionDialog from "../confirmActions/ConfirmActionDialog";
+import ConfirmActionDialog from "../ConfirmActionDialog";
 import { steps, initialState, CreateMeetState } from "./CreateMeetState";
 import { BasicInfoStep } from "./BasicInfoStep";
 import { UserOption } from "./UserSelect";
@@ -88,7 +88,8 @@ const mapMeetToState = (meet: Record<string, any>): CreateMeetState => {
     const offset = date.getTimezoneOffset() * 60 * 1000;
     return new Date(date.getTime() - offset).toISOString().slice(0, 16);
   };
-  const toNumberOrEmpty = (value: any) => (value === null || value === undefined ? "" : Number(value));
+  const toNumberOrEmpty = (value: any) =>
+    value === null || value === undefined ? "" : Number(value);
   const toCurrencyUnits = (value: any) =>
     value === null || value === undefined ? "" : Number(value) / 100;
 
@@ -107,7 +108,8 @@ const mapMeetToState = (meet: Record<string, any>): CreateMeetState => {
     capacity: toNumberOrEmpty(meet.capacity),
     waitlistSize: toNumberOrEmpty(meet.waitlist_size ?? meet.waitlistSize),
     autoApprove: meet.auto_placement ?? meet.autoPlacement ?? true,
-    autoCloseWaitlist: meet.auto_promote_waitlist ?? meet.autoPromoteWaitlist ?? false,
+    autoCloseWaitlist:
+      meet.auto_promote_waitlist ?? meet.autoPromoteWaitlist ?? false,
     allowGuests: meet.allow_guests ?? meet.allowGuests ?? false,
     maxGuests: toNumberOrEmpty(meet.max_guests ?? meet.maxGuests),
     currency: meet.currency_code ?? meet.currencyCode ?? initialState.currency,
@@ -118,28 +120,43 @@ const mapMeetToState = (meet: Record<string, any>): CreateMeetState => {
     waitlistResponse: meet.waitlist_message ?? meet.waitlistMessage ?? "",
     indemnityAccepted: meet.has_indemnity ?? meet.hasIndemnity ?? false,
     indemnityText: meet.indemnity ?? "",
-    allowMinorSign: meet.allow_minor_indemnity ?? meet.allowMinorIndemnity ?? false,
+    allowMinorSign:
+      meet.allow_minor_indemnity ?? meet.allowMinorIndemnity ?? false,
     questions: Array.isArray(meet.metaDefinitions)
       ? meet.metaDefinitions.map((definition: any) => ({
-          id: definition.id ?? crypto.randomUUID?.() ?? Math.random().toString(36).slice(2),
+          id:
+            definition.id ??
+            crypto.randomUUID?.() ??
+            Math.random().toString(36).slice(2),
           type: definition.fieldType ?? definition.field_type ?? "text",
           label: definition.label ?? "",
           required: definition.required ?? false,
-          options: Array.isArray(definition.config?.options) ? definition.config.options : [],
-          optionsInput: Array.isArray(definition.config?.options) ? definition.config.options.join(", ") : "",
-          fieldKey: definition.fieldKey ?? definition.field_key ?? definition.id
+          options: Array.isArray(definition.config?.options)
+            ? definition.config.options
+            : [],
+          optionsInput: Array.isArray(definition.config?.options)
+            ? definition.config.options.join(", ")
+            : "",
+          fieldKey:
+            definition.fieldKey ?? definition.field_key ?? definition.id,
         }))
       : [],
-    statusId: meet.status_id ?? meet.statusId ?? null
+    statusId: meet.statusId ?? null,
   };
 };
 
-export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }: CreateMeetModalProps) {
+export function CreateMeetModal({
+  open,
+  onClose,
+  onCreated,
+  meetId: meetIdProp,
+}: CreateMeetModalProps) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [activeStep, setActiveStep] = useState(0);
   const [state, setState] = useState<CreateMeetState>(initialState);
-  const [baselineState, setBaselineState] = useState<CreateMeetState>(initialState);
+  const [baselineState, setBaselineState] =
+    useState<CreateMeetState>(initialState);
   const [dirtyDialogOpen, setDirtyDialogOpen] = useState(false);
   const [pendingStep, setPendingStep] = useState<number | null>(null);
   const [pendingClose, setPendingClose] = useState(false);
@@ -174,18 +191,21 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
     if (!open) {
       return;
     }
-      setSubmitError(null);
-      setFieldErrors({});
-      if (!meetIdProp) {
-        setMeetId(null);
-        setShareCode(null);
-        const localeCurrency = getLocaleDefaults().currencyCode;
-        const fresh = { ...initialState, currency: localeCurrency || initialState.currency };
-        setState(fresh);
-        setBaselineState(fresh);
-        return;
-      }
-      setIsLoadingMeet(true);
+    setSubmitError(null);
+    setFieldErrors({});
+    if (!meetIdProp) {
+      setMeetId(null);
+      setShareCode(null);
+      const localeCurrency = getLocaleDefaults().currencyCode;
+      const fresh = {
+        ...initialState,
+        currency: localeCurrency || initialState.currency,
+      };
+      setState(fresh);
+      setBaselineState(fresh);
+      return;
+    }
+    setIsLoadingMeet(true);
     setMeetId(meetIdProp);
     const loadMeet = async () => {
       const meet = await api.get<Record<string, any>>(`/meets/${meetIdProp}`);
@@ -197,14 +217,21 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
     };
     loadMeet()
       .catch((error) => {
-        const message = error instanceof Error ? error.message : "Failed to load meet";
+        const message =
+          error instanceof Error ? error.message : "Failed to load meet";
         setSubmitError(message);
       })
       .finally(() => setIsLoadingMeet(false));
   }, [open, meetIdProp]);
 
-  const isLastStep = useMemo(() => activeStep >= steps.length - 1, [activeStep]);
-  const isDirty = useMemo(() => JSON.stringify(state) !== JSON.stringify(baselineState), [state, baselineState]);
+  const isLastStep = useMemo(
+    () => activeStep >= steps.length - 1,
+    [activeStep]
+  );
+  const isDirty = useMemo(
+    () => JSON.stringify(state) !== JSON.stringify(baselineState),
+    [state, baselineState]
+  );
   const missingPublishFields = useMemo(() => {
     const missing: string[] = [];
     if (!state.name.trim()) missing.push("Meet name");
@@ -215,8 +242,10 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
     if (!state.endTime) missing.push("End time");
     if (!state.openingDate) missing.push("Applications open");
     if (!state.closingDate) missing.push("Applications close");
-    if (state.capacity === "" || Number(state.capacity) < 0) missing.push("Capacity");
-    if (state.waitlistSize === "" || Number(state.waitlistSize) < 0) missing.push("Waitlist size");
+    if (state.capacity === "" || Number(state.capacity) < 0)
+      missing.push("Capacity");
+    if (state.waitlistSize === "" || Number(state.waitlistSize) < 0)
+      missing.push("Waitlist size");
     return missing;
   }, [state]);
 
@@ -225,8 +254,10 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
     switch (step) {
       case 0:
         if (!draft.name.trim()) errors.name = "Meet name is required";
-        if (!draft.description.trim()) errors.description = "Description is required";
-        if (!draft.organizerId) errors.organizerId = "Please select an organizer";
+        if (!draft.description.trim())
+          errors.description = "Description is required";
+        if (!draft.organizerId)
+          errors.organizerId = "Please select an organizer";
         break;
       case 1:
         if (!draft.location.trim()) errors.location = "Location is required";
@@ -234,8 +265,10 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
         if (!draft.endTime) errors.endTime = "End time is required";
         break;
       case 4:
-        if (!draft.openingDate) errors.openingDate = "Applications open is required";
-        if (!draft.closingDate) errors.closingDate = "Applications close is required";
+        if (!draft.openingDate)
+          errors.openingDate = "Applications open is required";
+        if (!draft.closingDate)
+          errors.closingDate = "Applications close is required";
         if (draft.capacity === "" || Number(draft.capacity) < 0) {
           errors.capacity = "Capacity cannot be negative";
         }
@@ -253,15 +286,19 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
     return {
       ...validateStep(0, draft),
       ...validateStep(1, draft),
-      ...validateStep(4, draft)
+      ...validateStep(4, draft),
     };
   };
 
   useEffect(() => {
     const trimmedName = state.name.trim();
     const trimmedDescription = state.description.trim();
-    const hasBasic = Boolean(trimmedName && trimmedDescription && state.organizerId);
-    const hasTime = Boolean(state.location.trim() && state.startTime && state.endTime);
+    const hasBasic = Boolean(
+      trimmedName && trimmedDescription && state.organizerId
+    );
+    const hasTime = Boolean(
+      state.location.trim() && state.startTime && state.endTime
+    );
     const hasIndemnity = Boolean(state.indemnityAccepted);
     const hasQuestion = state.questions.length > 0;
     const hasLimits =
@@ -270,13 +307,15 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
       Number(state.capacity) >= 0 &&
       state.waitlistSize !== "" &&
       Number(state.waitlistSize) >= 0;
-    const hasCost = state.costCents !== "" && !Number.isNaN(Number(state.costCents));
+    const hasCost =
+      state.costCents !== "" && !Number.isNaN(Number(state.costCents));
     const hasResponse =
       Boolean(state.approvedResponse?.trim()) ||
       Boolean(state.rejectResponse?.trim()) ||
       Boolean(state.waitlistResponse?.trim());
     const hasImage = Boolean(state.imageFile || state.imagePreview);
-    const isPublished = (state.statusId ?? null) !== null && state.statusId !== 1;
+    const isPublished =
+      (state.statusId ?? null) !== null && state.statusId !== 1;
 
     const completed: number[] = [];
     if (hasBasic) completed.push(1);
@@ -309,31 +348,36 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
     state.imageFile,
     state.imagePreview,
     meetId,
-    shareCode
+    shareCode,
   ]);
 
-  const buildPayloadForStep = (draft: CreateMeetState, step: number): CreateMeetPayload => {
+  const buildPayloadForStep = (
+    draft: CreateMeetState,
+    step: number
+  ): CreateMeetPayload => {
     switch (step) {
       case 0:
         return {
           name: draft.name || undefined,
           description: draft.description || undefined,
-          organizerId: draft.organizerId || undefined
+          organizerId: draft.organizerId || undefined,
         };
       case 1:
         return {
           location: draft.location || undefined,
-          locationLat: draft.locationLat === "" ? undefined : Number(draft.locationLat),
-          locationLong: draft.locationLong === "" ? undefined : Number(draft.locationLong),
+          locationLat:
+            draft.locationLat === "" ? undefined : Number(draft.locationLat),
+          locationLong:
+            draft.locationLong === "" ? undefined : Number(draft.locationLong),
           startTime: draft.startTime || undefined,
           endTime: draft.endTime || undefined,
-          scheduledDate: draft.startTime || undefined
+          scheduledDate: draft.startTime || undefined,
         };
       case 2:
         return {
           hasIndemnity: draft.indemnityAccepted,
           indemnity: draft.indemnityText || undefined,
-          allowMinorIndemnity: draft.allowMinorSign
+          allowMinorIndemnity: draft.allowMinorSign,
         };
       case 3:
         return {
@@ -343,31 +387,38 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
             label: question.label,
             fieldType: question.type,
             required: Boolean(question.required),
-            config: question.type === "select" ? { options: question.options ?? [] } : {}
-          }))
+            config:
+              question.type === "select"
+                ? { options: question.options ?? [] }
+                : {},
+          })),
         };
       case 4:
         return {
           openingDate: draft.openingDate || undefined,
           closingDate: draft.closingDate || undefined,
           capacity: draft.capacity === "" ? undefined : Number(draft.capacity),
-          waitlistSize: draft.waitlistSize === "" ? 0 : Number(draft.waitlistSize),
+          waitlistSize:
+            draft.waitlistSize === "" ? 0 : Number(draft.waitlistSize),
           autoPlacement: draft.autoApprove,
           autoPromoteWaitlist: draft.autoCloseWaitlist,
           allowGuests: draft.allowGuests,
-          maxGuests: draft.maxGuests === "" ? undefined : Number(draft.maxGuests)
+          maxGuests:
+            draft.maxGuests === "" ? undefined : Number(draft.maxGuests),
         };
       case 5:
         return {
           currencyCode: draft.currency || undefined,
-          costCents: draft.costCents === "" ? undefined : Number(draft.costCents),
-          depositCents: draft.depositCents === "" ? undefined : Number(draft.depositCents)
+          costCents:
+            draft.costCents === "" ? undefined : Number(draft.costCents),
+          depositCents:
+            draft.depositCents === "" ? undefined : Number(draft.depositCents),
         };
       case 6:
         return {
           confirmMessage: draft.approvedResponse || undefined,
           rejectMessage: draft.rejectResponse || undefined,
-          waitlistMessage: draft.waitlistResponse || undefined
+          waitlistMessage: draft.waitlistResponse || undefined,
         };
       default:
         return {};
@@ -383,14 +434,17 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
       formData.append("file", state.imageFile);
       formData.append("isPrimary", "true");
       const headers: Record<string, string> = {};
-      const token = typeof window !== "undefined" ? window.localStorage.getItem("accessToken") : null;
+      const token =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem("accessToken")
+          : null;
       if (token) {
         headers.Authorization = `Bearer ${token}`;
       }
       const res = await fetch(`${api.baseUrl}/meets/${meetId}/images`, {
         method: "POST",
         headers,
-        body: formData
+        body: formData,
       });
       if (!res.ok) {
         const message = await res.text();
@@ -403,18 +457,27 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
       const created = await api.post<Record<string, any>>("/meets", payload);
       setMeetId(created.id);
       setShareCode(created.shareCode ?? created.share_code ?? null);
-      setState((prev) => ({ ...prev, statusId: created.status_id ?? created.statusId ?? prev.statusId ?? 1 }));
+      setState((prev) => ({
+        ...prev,
+        statusId: created.statusId ?? prev.statusId ?? 1,
+      }));
       return true;
     }
     if (Object.keys(payload).length === 0) {
       return false;
     }
-    const updated = await api.patch<Record<string, any>>(`/meets/${meetId}`, payload);
-    if (updated?.shareCode || updated?.share_code) {
-      setShareCode(updated.shareCode ?? updated.share_code ?? null);
+    const updated = await api.patch<Record<string, any>>(
+      `/meets/${meetId}`,
+      payload
+    );
+    if (updated?.shareCode) {
+      setShareCode(updated.shareCode ?? null);
     }
-    if (updated?.status_id || updated?.statusId) {
-      setState((prev) => ({ ...prev, statusId: updated.status_id ?? updated.statusId ?? prev.statusId }));
+    if (updated?.statusId) {
+      setState((prev) => ({
+        ...prev,
+        statusId: updated.statusId ?? prev.statusId,
+      }));
     }
     return true;
   };
@@ -422,7 +485,9 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
   const handleNext = async () => {
     setIsSubmitting(true);
     setSubmitError(null);
-    const errors = isLastStep ? validateAllRequired(state) : validateStep(activeStep, state);
+    const errors = isLastStep
+      ? validateAllRequired(state)
+      : validateStep(activeStep, state);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       setIsSubmitting(false);
@@ -432,7 +497,9 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
     try {
       if (isLastStep) {
         if (missingPublishFields.length > 0) {
-          setSubmitError(`Missing required fields: ${missingPublishFields.join(", ")}`);
+          setSubmitError(
+            `Missing required fields: ${missingPublishFields.join(", ")}`
+          );
           return;
         }
         if (!meetId) {
@@ -455,7 +522,8 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
       setBaselineState(state);
       setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to save meet";
+      const message =
+        error instanceof Error ? error.message : "Failed to save meet";
       setSubmitError(message);
     } finally {
       setIsSubmitting(false);
@@ -518,7 +586,9 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
 
   const renderStep = () => {
     if (isLoadingMeet) {
-      return <Typography color="text.secondary">Loading meet details...</Typography>;
+      return (
+        <Typography color="text.secondary">Loading meet details...</Typography>
+      );
     }
     switch (activeStep) {
       case 0: {
@@ -529,7 +599,10 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
             (u.email ? u.email.split("@")[0] : u.id);
           return { id: u.id, label };
         });
-        if (user?.id && !organizerOptions.some((option) => option.id === user.id)) {
+        if (
+          user?.id &&
+          !organizerOptions.some((option) => option.id === user.id)
+        ) {
           const label =
             [user.firstName, user.lastName].filter(Boolean).join(" ") ||
             user.idp_profile?.name ||
@@ -547,13 +620,25 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
         );
       }
       case 1:
-        return <TimeAndLocationStep state={state} setState={(fn) => setState(fn)} errors={fieldErrors} />;
+        return (
+          <TimeAndLocationStep
+            state={state}
+            setState={(fn) => setState(fn)}
+            errors={fieldErrors}
+          />
+        );
       case 2:
         return <IndemnityStep state={state} setState={(fn) => setState(fn)} />;
       case 3:
         return <QuestionsStep state={state} setState={(fn) => setState(fn)} />;
       case 4:
-        return <LimitsStep state={state} setState={(fn) => setState(fn)} errors={fieldErrors} />;
+        return (
+          <LimitsStep
+            state={state}
+            setState={(fn) => setState(fn)}
+            errors={fieldErrors}
+          />
+        );
       case 5:
         return <CostsStep state={state} setState={(fn) => setState(fn)} />;
       case 6:
@@ -561,9 +646,16 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
       case 7:
         return <ImageStep state={state} setState={(fn) => setState(fn)} />;
       case 8:
-        return <FinishStep shareCode={shareCode} missingFields={missingPublishFields} />;
+        return (
+          <FinishStep
+            shareCode={shareCode}
+            missingFields={missingPublishFields}
+          />
+        );
       default:
-        return <Typography color="text.secondary">Form coming soon.</Typography>;
+        return (
+          <Typography color="text.secondary">Form coming soon.</Typography>
+        );
     }
   };
 
@@ -579,7 +671,7 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
           display: "flex",
           justifyContent: "center",
           alignItems: fullScreen ? "stretch" : "center",
-          zIndex: 1400
+          zIndex: 1400,
         }}
       >
         <Paper
@@ -590,10 +682,15 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
             p: fullScreen ? 2 : 3,
             display: "flex",
             flexDirection: "column",
-            borderRadius: fullScreen ? 0 : 3
+            borderRadius: fullScreen ? 0 : 3,
           }}
         >
-          <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            mb={2}
+          >
             <Typography variant="h6" fontWeight={700}>
               New meet
             </Typography>
@@ -606,12 +703,29 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
               {submitError}
             </Typography>
           )}
-          <Stack direction="row" spacing={3} sx={{ flex: 1, overflow: "hidden" }}>
-            <Box sx={{ minWidth: 220, pr: 2, borderRight: 1, borderColor: "divider" }}>
+          <Stack
+            direction="row"
+            spacing={3}
+            sx={{ flex: 1, overflow: "hidden" }}
+          >
+            <Box
+              sx={{
+                minWidth: 220,
+                pr: 2,
+                borderRight: 1,
+                borderColor: "divider",
+              }}
+            >
               <Stepper activeStep={activeStep} orientation="vertical" nonLinear>
                 {steps.map((label, index) => (
-                  <Step key={label} completed={completedSteps.includes(index + 1)}>
-                    <StepLabel onClick={() => handleStepChange(index)} sx={{ cursor: "pointer" }}>
+                  <Step
+                    key={label}
+                    completed={completedSteps.includes(index + 1)}
+                  >
+                    <StepLabel
+                      onClick={() => handleStepChange(index)}
+                      sx={{ cursor: "pointer" }}
+                    >
                       {label}
                     </StepLabel>
                   </Step>
@@ -619,9 +733,23 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
               </Stepper>
             </Box>
             <Stack sx={{ flex: 1, minHeight: 0 }}>
-              <Box sx={{ flex: 1, overflowY: "auto", pr: 1 }}>{renderStep()}</Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between", pt: 2, borderTop: 1, borderColor: "divider" }}>
-                <Button variant="text" disabled={activeStep === 0} onClick={handlePrev}>
+              <Box sx={{ flex: 1, overflowY: "auto", pr: 1 }}>
+                {renderStep()}
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  pt: 2,
+                  borderTop: 1,
+                  borderColor: "divider",
+                }}
+              >
+                <Button
+                  variant="text"
+                  disabled={activeStep === 0}
+                  onClick={handlePrev}
+                >
                   Previous
                 </Button>
                 <Stack direction="row" spacing={1}>
@@ -649,7 +777,13 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
                       (isLastStep && missingPublishFields.length > 0)
                     }
                   >
-                    {isLastStep ? (isPublishing ? "Publishing..." : "Publish") : isSubmitting ? "Saving..." : "Save & Continue"}
+                    {isLastStep
+                      ? isPublishing
+                        ? "Publishing..."
+                        : "Publish"
+                      : isSubmitting
+                      ? "Saving..."
+                      : "Save & Continue"}
                   </Button>
                 </Stack>
               </Box>
@@ -659,12 +793,11 @@ export function CreateMeetModal({ open, onClose, onCreated, meetId: meetIdProp }
         <ConfirmActionDialog
           open={dirtyDialogOpen}
           title="Discard changes?"
-          content="You have unsaved changes. Leaving this step will discard them."
-          confirmText="Discard"
-          cancelText="Stay"
+          description="You have unsaved changes. Leaving this step will discard them."
+          confirmLabel="Discard"
+          cancelLabel="Stay"
           onConfirm={confirmDiscard}
           onClose={cancelDiscard}
-          zIndex={1700}
         />
       </Box>
     </Portal>

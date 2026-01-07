@@ -25,10 +25,11 @@ import {
   ConfirmCloseMeetDialog,
   ConfirmDeleteMeetDialog,
   ConfirmOpenMeetDialog,
-  ConfirmPostponeMeetDialog
+  ConfirmPostponeMeetDialog,
 } from "../components/confirmActions";
 import { useUpdateMeetStatus } from "../hooks/useUpdateMeetStatus";
 import { useApi } from "../hooks/useApi";
+import MeetStatusEnum from "../models/MeetStatusEnum";
 
 function PlanPage() {
   const [showModal, setShowModal] = useState(false);
@@ -49,17 +50,24 @@ function PlanPage() {
     useUpdateMeetStatus();
   const api = useApi();
   const handleRowAction = (meet: any) => {
-    const statusId = meet?.status_id;
+    const statusId = meet?.statusId;
     setSelectedMeetId(meet.id);
-    if (statusId === 1 || statusId === 6) {
+    if (statusId === 1 || statusId === MeetStatusEnum.Draft) {
       setShowModal(true);
       return;
     }
-    if (statusId === 2 || statusId === 3) {
+    if (
+      statusId === MeetStatusEnum.Published ||
+      statusId === MeetStatusEnum.Open
+    ) {
       setShowAttendeesModal(true);
       return;
     }
-    if (statusId === 4 || statusId === 5 || statusId === 7) {
+    if (
+      statusId === MeetStatusEnum.Closed ||
+      statusId === MeetStatusEnum.Cancelled ||
+      statusId === MeetStatusEnum.Completed
+    ) {
       setShowReportsModal(true);
       return;
     }
@@ -136,8 +144,8 @@ function PlanPage() {
                   </TableCell>
                   <TableCell>
                     <MeetStatus
-                      statusId={(meet as any).status_id}
-                      fallbackLabel={(meet as any).status || "Scheduled"}
+                      statusId={meet.statusId}
+                      fallbackLabel={meet.status || "Unknown"}
                     />
                   </TableCell>
                   <TableCell align="right">
@@ -148,14 +156,14 @@ function PlanPage() {
                     >
                       <MeetActionsMenu
                         meetId={meet.id}
-                        statusId={(meet as any).status_id}
+                        statusId={meet.statusId}
                         onEdit={() => {
                           setSelectedMeetId(meet.id);
                           setShowModal(true);
                         }}
                         onPreview={() =>
                           navigate(
-                            `/meets/${(meet as any).share_code || meet.id}?preview=true`
+                            `/meets/${meet.shareCode || meet.id}?preview=true`
                           )
                         }
                         onAttendees={() => {
@@ -187,7 +195,7 @@ function PlanPage() {
                         onDelete={() =>
                           setPendingAction({
                             type:
-                              (meet as any).status_id === 1
+                              meet.statusId === MeetStatusEnum.Draft
                                 ? "delete"
                                 : "cancel",
                             meetId: meet.id,
@@ -240,7 +248,10 @@ function PlanPage() {
         onClose={() => setPendingAction(null)}
         onConfirm={async () => {
           if (!pendingAction) return;
-          await updateStatusAsync({ meetId: pendingAction.meetId, statusId: 3 });
+          await updateStatusAsync({
+            meetId: pendingAction.meetId,
+            statusId: 3,
+          });
           setPendingAction(null);
           await refetch();
         }}
@@ -251,7 +262,10 @@ function PlanPage() {
         onClose={() => setPendingAction(null)}
         onConfirm={async (_message) => {
           if (!pendingAction) return;
-          await updateStatusAsync({ meetId: pendingAction.meetId, statusId: 6 });
+          await updateStatusAsync({
+            meetId: pendingAction.meetId,
+            statusId: MeetStatusEnum.Postponed,
+          });
           setPendingAction(null);
           await refetch();
         }}
@@ -262,7 +276,10 @@ function PlanPage() {
         onClose={() => setPendingAction(null)}
         onConfirm={async () => {
           if (!pendingAction) return;
-          await updateStatusAsync({ meetId: pendingAction.meetId, statusId: 4 });
+          await updateStatusAsync({
+            meetId: pendingAction.meetId,
+            statusId: 4,
+          });
           setPendingAction(null);
           await refetch();
         }}
@@ -273,7 +290,10 @@ function PlanPage() {
         onClose={() => setPendingAction(null)}
         onConfirm={async () => {
           if (!pendingAction) return;
-          await updateStatusAsync({ meetId: pendingAction.meetId, statusId: 5 });
+          await updateStatusAsync({
+            meetId: pendingAction.meetId,
+            statusId: MeetStatusEnum.Cancelled,
+          });
           setPendingAction(null);
           await refetch();
         }}

@@ -1,21 +1,6 @@
 import { useApi } from "./useApi";
 import { useQuery } from "@tanstack/react-query";
-
-export type Meet = {
-  id: string;
-  name: string;
-  location: string;
-  start_time: string;
-  end_time: string;
-  status?: string;
-  status_id?: number;
-  has_indemnity?: boolean;
-  indemnity?: string;
-  allow_guests?: boolean;
-  max_guests?: number;
-  waitlist_message?: string;
-  allow_minor_indemnity?: boolean;
-};
+import Meet from "../models/MeetModel";
 
 type MeetsResponse = { meets: Meet[] } | Meet[];
 
