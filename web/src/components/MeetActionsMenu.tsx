@@ -18,21 +18,14 @@ import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import { MouseEvent, useState } from "react";
 import { PendingAction } from "./MeetActionsDialogs";
 import MeetStatusEnum from "../models/MeetStatusEnum";
+import { useNavigate } from "react-router-dom";
 
 type MeetActionsMenuProps = {
   meetId: string;
   statusId?: number;
   setSelectedMeetId: (meetId: string | null) => void;
   setPendingAction: (action: PendingAction | null) => void;
-  onEdit?: (meetId: string) => void;
-  onPreview?: (meetId: string) => void;
-  onDelete?: (meetId: string) => void;
-  onAttendees?: (meetId: string) => void;
-  onReports?: (meetId: string) => void;
-  onPostpone?: (meetId: string) => void;
-  onOpen?: (meetId: string) => void;
-  onCheckin?: (meetId: string) => void;
-  onCloseMeet?: (meetId: string) => void;
+  previewLinkCode?: string;
 };
 
 // Helper to decide what to show in the menu
@@ -87,9 +80,11 @@ export function MeetActionsMenu({
   statusId,
   setSelectedMeetId,
   setPendingAction,
+  previewLinkCode,
 }: MeetActionsMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const nav = useNavigate();
 
   const handleOpen = (event: MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -142,7 +137,14 @@ export function MeetActionsMenu({
           </MenuItem>
         )}
         {shouldShow("preview", statusId) && (
-          <MenuItem onClick={(event) => handleAction(event, "preview")}>
+          <MenuItem
+            onClick={(event) =>
+              handleAction(event, "preview", () => {
+                if (previewLinkCode)
+                  nav(`/meets/${previewLinkCode}?preview=true`);
+              })
+            }
+          >
             <ListItemIcon>
               <OpenInNewOutlinedIcon fontSize="small" />
             </ListItemIcon>

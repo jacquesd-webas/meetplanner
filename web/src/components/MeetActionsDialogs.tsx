@@ -27,6 +27,10 @@ type MeetActionsDialogsProps = {
   pendingAction?: PendingAction;
   setPendingAction: (action: PendingAction | null) => void;
   setSelectedMeetId: (meetId: string | null) => void;
+  onActionConfirm?: (
+    action: PendingAction,
+    meetId: string | null
+  ) => Promise<void> | void;
 };
 
 function MeetActionsDialogs({
@@ -34,6 +38,7 @@ function MeetActionsDialogs({
   pendingAction,
   setPendingAction,
   setSelectedMeetId,
+  onActionConfirm,
 }: MeetActionsDialogsProps) {
   const [isCloseDialogOpen, setIsCloseDialogOpen] = React.useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
@@ -44,6 +49,28 @@ function MeetActionsDialogs({
   const [showMeetModal, setShowMeetModal] = React.useState(false);
   const [showAttendeesModal, setShowAttendeesModal] = React.useState(false);
   const [showReportsModal, setShowReportsModal] = React.useState(false);
+
+  const anyOpen =
+    isCloseDialogOpen ||
+    isCancelDialogOpen ||
+    isOpenDialogOpen ||
+    isPostponeDialogOpen ||
+    isDeleteDialogOpen ||
+    showMeetModal ||
+    showAttendeesModal ||
+    showReportsModal;
+
+  // Prevent background scroll when any dialog/modal is open
+  React.useEffect(() => {
+    if (!anyOpen) {
+      return;
+    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [anyOpen]);
 
   // Common handler to close dialogs and reset state
   const handleClose = () => {
@@ -83,9 +110,6 @@ function MeetActionsDialogs({
         setSelectedMeetId(null);
         setShowMeetModal(true);
         break;
-      case "edit":
-        setShowMeetModal(true);
-        break;
       case "attendees":
         setShowAttendeesModal(true);
         break;
@@ -110,13 +134,24 @@ function MeetActionsDialogs({
       case "delete":
         setIsDeleteDialogOpen(true);
         break;
+      case "preview":
+        break;
+      case "checkin":
+        if (onActionConfirm) {
+          onActionConfirm(pendingAction, meetId);
+        }
+        setPendingAction(null);
+        break;
       default:
         break;
     }
-  }, [pendingAction]);
+  }, [pendingAction, meetId, onActionConfirm]);
 
   // For now this is just closing the dialog
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    if (pendingAction && onActionConfirm) {
+      await onActionConfirm(pendingAction, meetId);
+    }
     handleClose();
   };
 

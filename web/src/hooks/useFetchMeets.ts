@@ -29,7 +29,9 @@ export function useFetchMeets(options: UseFetchMeetsOptions = {}) {
       if (view !== "all") params.set("view", view);
       params.set("page", String(page));
       params.set("limit", String(limit));
-      const res = await api.get<MeetsResponse | MeetsApiResponse>(`/meets?${params.toString()}`);
+      const res = await api.get<MeetsResponse | MeetsApiResponse>(
+        `/meets?${params.toString()}`
+      );
       if (Array.isArray(res)) {
         return { items: res, total: res.length, page, limit };
       }
@@ -37,7 +39,7 @@ export function useFetchMeets(options: UseFetchMeetsOptions = {}) {
         return res as MeetsApiResponse;
       }
       return { items: (res as any).meets || [], total: 0, page, limit };
-    }
+    },
   });
 
   return {
@@ -47,6 +49,6 @@ export function useFetchMeets(options: UseFetchMeetsOptions = {}) {
     limit: query.data?.limit ?? limit,
     isLoading: query.isLoading,
     error: query.error ? (query.error as Error).message : null,
-    refetch: query.refetch
+    refetch: query.refetch,
   };
 }

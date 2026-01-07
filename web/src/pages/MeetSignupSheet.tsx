@@ -32,7 +32,7 @@ import { useApi } from "../hooks/useApi";
 import { MeetSignupDuplicateDialog } from "../components/MeetSignupDuplicateDialog";
 import { MeetSignupSubmitted } from "../components/MeetSignupSubmitted";
 import { useMeetSignupSheetState } from "./MeetSignupSheetState";
-import { getLocaleDefaults } from "../utils/locale";
+import { getLocaleDefaults } from "../helpers/locale";
 import {
   InternationalPhoneField,
   buildInternationalPhone,

@@ -27,10 +27,12 @@ import { ResponsesStep } from "./ResponsesStep";
 import { FinishStep } from "./FinishStep";
 import { ImageStep } from "./ImageStep";
 import { useApi } from "../../hooks/useApi";
+import { useSaveMeet } from "../../hooks/useSaveMeet";
 import { useMe } from "../../hooks/useMe";
 import { useUsers } from "../../hooks/useUsers";
 import { useUpdateMeetStatus } from "../../hooks/useUpdateMeetStatus";
-import { getLocaleDefaults } from "../../utils/locale";
+import { useFetchMeet } from "../../hooks/useFetchMeet";
+import { getLocaleDefaults } from "../../helpers/locale";
 
 type CreateMeetModalProps = {
   open: boolean;
@@ -97,38 +99,36 @@ const mapMeetToState = (meet: Record<string, any>): CreateMeetState => {
     ...initialState,
     name: meet.name ?? "",
     description: meet.description ?? "",
-    organizerId: meet.organizer_id ?? meet.organizerId ?? "",
+    organizerId: meet.organizerId ?? "",
     location: meet.location ?? "",
-    locationLat: toNumberOrEmpty(meet.location_lat ?? meet.locationLat),
-    locationLong: toNumberOrEmpty(meet.location_long ?? meet.locationLong),
-    startTime: toDateTimeInput(meet.start_time ?? meet.startTime),
-    endTime: toDateTimeInput(meet.end_time ?? meet.endTime),
-    openingDate: toDateTimeInput(meet.opening_date ?? meet.openingDate),
-    closingDate: toDateTimeInput(meet.closing_date ?? meet.closingDate),
+    locationLat: toNumberOrEmpty(meet.locationLat),
+    locationLong: toNumberOrEmpty(meet.locationLong),
+    startTime: toDateTimeInput(meet.startTime),
+    endTime: toDateTimeInput(meet.endTime),
+    openingDate: toDateTimeInput(meet.openingDate),
+    closingDate: toDateTimeInput(meet.closingDate),
     capacity: toNumberOrEmpty(meet.capacity),
-    waitlistSize: toNumberOrEmpty(meet.waitlist_size ?? meet.waitlistSize),
-    autoApprove: meet.auto_placement ?? meet.autoPlacement ?? true,
-    autoCloseWaitlist:
-      meet.auto_promote_waitlist ?? meet.autoPromoteWaitlist ?? false,
-    allowGuests: meet.allow_guests ?? meet.allowGuests ?? false,
-    maxGuests: toNumberOrEmpty(meet.max_guests ?? meet.maxGuests),
-    currency: meet.currency_code ?? meet.currencyCode ?? initialState.currency,
-    costCents: toCurrencyUnits(meet.cost_cents ?? meet.costCents),
-    depositCents: toCurrencyUnits(meet.deposit_cents ?? meet.depositCents),
-    approvedResponse: meet.confirm_message ?? meet.confirmMessage ?? "",
-    rejectResponse: meet.reject_message ?? meet.rejectMessage ?? "",
-    waitlistResponse: meet.waitlist_message ?? meet.waitlistMessage ?? "",
-    indemnityAccepted: meet.has_indemnity ?? meet.hasIndemnity ?? false,
+    waitlistSize: toNumberOrEmpty(meet.waitlistSize),
+    autoApprove: meet.autoPlacement ?? true,
+    autoCloseWaitlist: meet.autoPromoteWaitlist ?? false,
+    allowGuests: meet.allowGuests ?? false,
+    maxGuests: toNumberOrEmpty(meet.maxGuests),
+    currency: meet.currencyCode ?? initialState.currency,
+    costCents: toCurrencyUnits(meet.costCents),
+    depositCents: toCurrencyUnits(meet.depositCents),
+    approvedResponse: meet.confirmMessage ?? "",
+    rejectResponse: meet.rejectMessage ?? "",
+    waitlistResponse: meet.waitlistMessage ?? "",
+    indemnityAccepted: meet.hasIndemnity ?? false,
     indemnityText: meet.indemnity ?? "",
-    allowMinorSign:
-      meet.allow_minor_indemnity ?? meet.allowMinorIndemnity ?? false,
+    allowMinorSign: meet.allowMinorIndemnity ?? false,
     questions: Array.isArray(meet.metaDefinitions)
       ? meet.metaDefinitions.map((definition: any) => ({
           id:
             definition.id ??
             crypto.randomUUID?.() ??
             Math.random().toString(36).slice(2),
-          type: definition.fieldType ?? definition.field_type ?? "text",
+          type: definition.fieldType ?? definition.field_type ?? "text", // XXX TODO: fix this
           label: definition.label ?? "",
           required: definition.required ?? false,
           options: Array.isArray(definition.config?.options)
@@ -168,9 +168,14 @@ export function CreateMeetModal({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const api = useApi();
+  const { save: saveMeet, isSaving } = useSaveMeet(meetIdProp ?? null);
   const { updateStatusAsync, isLoading: isPublishing } = useUpdateMeetStatus();
   const { user } = useMe();
   const { users } = useUsers();
+  const { data: fetchedMeet, isLoading: isFetchingMeet } = useFetchMeet(
+    meetIdProp,
+    Boolean(open && meetIdProp)
+  );
 
   useEffect(() => {
     if (!open) {
@@ -205,24 +210,24 @@ export function CreateMeetModal({
       setBaselineState(fresh);
       return;
     }
-    setIsLoadingMeet(true);
     setMeetId(meetIdProp);
-    const loadMeet = async () => {
-      const meet = await api.get<Record<string, any>>(`/meets/${meetIdProp}`);
-      const mapped = mapMeetToState(meet);
+  }, [open, meetIdProp]);
+
+  useEffect(() => {
+    if (!open || !meetIdProp) return;
+    setIsLoadingMeet(isFetchingMeet);
+    if (fetchedMeet) {
+      const mapped = mapMeetToState(fetchedMeet as Record<string, any>);
       setState(mapped);
       setBaselineState(mapped);
-      setShareCode(meet.shareCode ?? meet.share_code ?? null);
+      setShareCode(
+        (fetchedMeet as any).shareCode ??
+          (fetchedMeet as any).share_code ??
+          null
+      );
       setFieldErrors({});
-    };
-    loadMeet()
-      .catch((error) => {
-        const message =
-          error instanceof Error ? error.message : "Failed to load meet";
-        setSubmitError(message);
-      })
-      .finally(() => setIsLoadingMeet(false));
-  }, [open, meetIdProp]);
+    }
+  }, [open, meetIdProp, fetchedMeet, isFetchingMeet]);
 
   const isLastStep = useMemo(
     () => activeStep >= steps.length - 1,
@@ -425,7 +430,7 @@ export function CreateMeetModal({
     }
   };
 
-  const saveStep = async (step: number) => {
+  const handleSaveStep = async (step: number) => {
     if (step === 7 && meetId) {
       if (!state.imageFile) {
         return false;
@@ -453,30 +458,20 @@ export function CreateMeetModal({
       return true;
     }
     const payload = buildPayloadForStep(state, meetId ? step : 0);
-    if (!meetId) {
-      const created = await api.post<Record<string, any>>("/meets", payload);
-      setMeetId(created.id);
-      setShareCode(created.shareCode ?? created.share_code ?? null);
-      setState((prev) => ({
-        ...prev,
-        statusId: created.statusId ?? prev.statusId ?? 1,
-      }));
-      return true;
-    }
     if (Object.keys(payload).length === 0) {
       return false;
     }
-    const updated = await api.patch<Record<string, any>>(
-      `/meets/${meetId}`,
-      payload
-    );
-    if (updated?.shareCode) {
-      setShareCode(updated.shareCode ?? null);
+    const result = await saveMeet(payload, meetId);
+    if (!meetId && result?.id) {
+      setMeetId(result.id);
     }
-    if (updated?.statusId) {
+    if (result?.shareCode) {
+      setShareCode(result.shareCode ?? null);
+    }
+    if (result?.statusId) {
       setState((prev) => ({
         ...prev,
-        statusId: updated.statusId ?? prev.statusId,
+        statusId: result.statusId ?? prev.statusId,
       }));
     }
     return true;
@@ -515,7 +510,7 @@ export function CreateMeetModal({
         setActiveStep(0);
         return;
       }
-      const didSave = await saveStep(activeStep);
+      const didSave = await handleSaveStep(activeStep);
       if (didSave) {
         onCreated?.();
       }
