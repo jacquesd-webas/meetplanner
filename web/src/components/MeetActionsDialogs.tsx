@@ -87,6 +87,9 @@ function MeetActionsDialogs({
       case "report":
         setShowReportsModal(false);
         break;
+      case "checkin":
+        setShowAttendeesModal(false);
+        break;
       case "close":
         setIsCloseDialogOpen(false);
         break;
@@ -101,10 +104,6 @@ function MeetActionsDialogs({
         break;
       case "delete":
         setIsDeleteDialogOpen(false);
-        break;
-      case "preview":
-        break;
-      case "checkin":
         break;
       default:
         break;
@@ -129,6 +128,9 @@ function MeetActionsDialogs({
       case "edit":
         setShowMeetModal(true);
         break;
+      case "checkin":
+        setShowAttendeesModal(true);
+        break;
       case "close":
         setIsCloseDialogOpen(true);
         break;
@@ -145,12 +147,6 @@ function MeetActionsDialogs({
         setIsDeleteDialogOpen(true);
         break;
       case "preview":
-        break;
-      case "checkin":
-        if (onActionConfirm) {
-          onActionConfirm(pendingAction, meetId);
-        }
-        setPendingAction(null);
         break;
       default:
         break;
