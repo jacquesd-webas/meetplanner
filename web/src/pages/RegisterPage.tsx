@@ -24,6 +24,7 @@ import {
 } from "../components/InternationalPhoneField";
 import { getLocaleDefaults } from "../helpers/locale";
 import { useApi } from "../hooks/useApi";
+import { getLogoSrc } from "../helpers/logo";
 
 function RegisterPage() {
   const [firstName, setFirstName] = useState("");
@@ -43,6 +44,7 @@ function RegisterPage() {
   const navigate = useNavigate();
   const [emailError, setEmailError] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const logoSrc = getLogoSrc();
   const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY as
     | string
     | undefined;
@@ -98,7 +100,7 @@ function RegisterPage() {
     >
       <Box sx={{ textAlign: "center", mb: 4 }}>
         <img
-          src="/static/adventuremeets-logo.svg"
+          src={logoSrc}
           alt="AdventureMeets logo"
           width={320}
           height="auto"

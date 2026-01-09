@@ -1,4 +1,12 @@
-import { Box, Chip, Paper, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Box,
+  Chip,
+  Paper,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import HistoryIcon from "@mui/icons-material/History";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
@@ -11,6 +19,7 @@ import Meet from "../../models/MeetModel";
 import { MeetActionsMenu } from "../MeetActionsMenu";
 import { PendingAction } from "../MeetActionsDialogs";
 import MeetStatusEnum from "../../models/MeetStatusEnum";
+import { MeetStatus } from "../MeetStatus";
 
 type MeetCardProps = {
   meet: Meet;
@@ -103,7 +112,7 @@ export function MeetCard({
         <Typography variant="h6" sx={{ flex: 1 }}>
           {meet.name}
         </Typography>
-        <Chip label={statusLabel} color={isUpcoming ? "primary" : "default"} size="small" />
+        <MeetStatus statusId={meet.statusId} />
         <Box sx={{ ml: 0.5 }} onClick={(e) => e.stopPropagation()}>
           <MeetActionsMenu
             meetId={meet.id}

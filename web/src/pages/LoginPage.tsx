@@ -16,12 +16,14 @@ import { useState } from "react";
 import { useLogin } from "../hooks/useLogin";
 import { useNavigate } from "react-router-dom";
 import { AuthSocialButtons } from "../components/AuthSocialButtons";
+import { getLogoSrc } from "../helpers/logo";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { loginAsync, isLoading, error } = useLogin();
   const navigate = useNavigate();
+  const logoSrc = getLogoSrc();
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -45,7 +47,7 @@ function LoginPage() {
     >
       <Box sx={{ textAlign: "center", mb: 4 }}>
         <img
-          src="/static/adventuremeets-logo.svg"
+          src={logoSrc}
           alt="AdventureMeets logo"
           width={320}
           height="auto"

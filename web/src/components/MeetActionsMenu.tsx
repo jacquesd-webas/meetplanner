@@ -1,4 +1,4 @@
-import { MouseEvent, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import {
   Box,
   Drawer,
@@ -92,6 +92,17 @@ export function MeetActionsMenu({
   const open = Boolean(anchorEl);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const nav = useNavigate();
+
+  // If the viewport switches while a menu is open, convert to the appropriate UI.
+  useEffect(() => {
+    if (isMobile && open) {
+      setAnchorEl(null);
+      setDrawerOpen(true);
+    }
+    if (!isMobile && drawerOpen) {
+      setDrawerOpen(false);
+    }
+  }, [isMobile, open, drawerOpen]);
 
   const handleOpen = (event: MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -239,7 +250,16 @@ export function MeetActionsMenu({
 
   return (
     <>
-      <IconButton size="small" onClick={handleOpen}>
+      <IconButton
+        size="small"
+        onClick={handleOpen}
+        sx={{
+          color:
+            theme.palette.mode === "dark"
+              ? theme.palette.grey[200]
+              : theme.palette.text.primary,
+        }}
+      >
         <MoreVertIcon fontSize="small" />
       </IconButton>
       {!isMobile && (

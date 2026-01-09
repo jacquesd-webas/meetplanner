@@ -14,6 +14,8 @@ import {
   useTheme,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import VerticalSplitOutlinedIcon from "@mui/icons-material/VerticalSplitOutlined";
+import ViewDayOutlinedIcon from "@mui/icons-material/ViewDayOutlined";
 import ConfirmActionDialog from "../ConfirmActionDialog";
 import { steps, initialState, CreateMeetState } from "./CreateMeetState";
 import { BasicInfoStep } from "./BasicInfoStep";
@@ -167,6 +169,7 @@ export function CreateMeetModal({
   const [isLoadingMeet, setIsLoadingMeet] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [showSteps, setShowSteps] = useState(!fullScreen);
   const api = useApi();
   const { save: saveMeet, isSaving } = useSaveMeet(meetIdProp ?? null);
   const { updateStatusAsync, isLoading: isPublishing } = useUpdateMeetStatus();
@@ -182,6 +185,12 @@ export function CreateMeetModal({
       setActiveStep(0);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      setShowSteps(!fullScreen);
+    }
+  }, [open, fullScreen]);
 
   useEffect(() => {
     if (user?.id && !state.organizerId) {
@@ -542,6 +551,9 @@ export function CreateMeetModal({
       return;
     }
     setActiveStep(target);
+    if (fullScreen) {
+      setShowSteps(false);
+    }
   };
 
   const handleCancel = () => {
@@ -681,28 +693,37 @@ export function CreateMeetModal({
           }}
         >
           <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            mb={2}
-          >
-            <Typography variant="h6" fontWeight={700}>
-              New meet
-            </Typography>
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={2}
+        >
+          <Typography variant="h6" fontWeight={700}>
+            New meet
+          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <IconButton
+              onClick={() => setShowSteps((prev) => !prev)}
+              aria-label={showSteps ? "Hide panel" : "Show panel"}
+            >
+              {showSteps ? <ViewDayOutlinedIcon /> : <VerticalSplitOutlinedIcon />}
+            </IconButton>
             <IconButton onClick={() => handleCancel()}>
               <CloseIcon />
             </IconButton>
           </Stack>
-          {submitError && (
-            <Typography color="error" variant="body2" sx={{ mb: 2 }}>
-              {submitError}
-            </Typography>
-          )}
-          <Stack
-            direction="row"
-            spacing={3}
-            sx={{ flex: 1, overflow: "hidden" }}
-          >
+        </Stack>
+        {submitError && (
+          <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+            {submitError}
+          </Typography>
+        )}
+        <Stack
+          direction="row"
+          spacing={showSteps ? 3 : 0}
+          sx={{ flex: 1, overflow: "hidden" }}
+        >
+          {showSteps && (
             <Box
               sx={{
                 minWidth: 220,
@@ -727,11 +748,12 @@ export function CreateMeetModal({
                 ))}
               </Stepper>
             </Box>
-            <Stack sx={{ flex: 1, minHeight: 0 }}>
-              <Box sx={{ flex: 1, overflowY: "auto", pr: 1 }}>
-                {renderStep()}
-              </Box>
-              <Box
+          )}
+          <Stack sx={{ flex: 1, minHeight: 0 }}>
+            <Box sx={{ flex: 1, overflowY: "auto", pr: 1 }}>
+              {renderStep()}
+            </Box>
+            <Box
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",

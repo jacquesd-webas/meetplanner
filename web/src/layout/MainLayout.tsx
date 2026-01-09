@@ -1,8 +1,13 @@
-import { AppBar, Avatar, Box, Container, IconButton, Menu, MenuItem, Stack, Toolbar, Tooltip, useMediaQuery, useTheme } from "@mui/material";
-import { useMemo, useState, MouseEvent } from "react";
+import { AppBar, Avatar, Box, Container, IconButton, ListItemIcon, Menu, MenuItem, Stack, Toolbar, Tooltip, useMediaQuery, useTheme } from "@mui/material";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import LogoutIcon from "@mui/icons-material/Logout";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import { useMemo, useState, MouseEvent, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useMe } from "../hooks/useMe";
 import { ProfileModal } from "../components/ProfileModal";
+import { getLogoSrc } from "../helpers/logo";
 
 const navItems = [
   { label: "Dashboard", path: "/" },
@@ -56,24 +61,37 @@ function MainLayout() {
     navigate("/login");
   };
 
+  const [mode, setMode] = useState<"light" | "dark">(
+    () => (localStorage.getItem("themeMode") as "light" | "dark") || "light"
+  );
+
+  useEffect(() => {
+    document.body.setAttribute("data-theme", mode);
+    localStorage.setItem("themeMode", mode);
+  }, [mode]);
+
+  const toggleMode = () => setMode((prev) => (prev === "light" ? "dark" : "light"));
+  const logoSrc = getLogoSrc(mode);
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       {!isMobile && (
         <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Toolbar>
-            <Box component="img" src="/static/adventuremeets-logo.svg" alt="AdventureMeets logo" sx={{ height: 36, mr: 3 }} />
+            <Box component="img" src={logoSrc} alt="AdventureMeets logo" sx={{ height: 36, mr: 3 }} />
             <Stack direction="row" spacing={2} alignItems="center">
               {navItems.map((item) => (
                 <Box
                   key={item.path}
                   component="button"
                   onClick={() => handleNavigate(item.path)}
-                  style={{
+                  sx={{
                     background: "none",
                     border: "none",
                     cursor: "pointer",
                     fontSize: "0.95rem",
-                    fontWeight: 600
+                    fontWeight: 600,
+                    color: "text.primary"
                   }}
                 >
                   {item.label}
@@ -87,8 +105,24 @@ function MainLayout() {
               </IconButton>
             </Tooltip>
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} transformOrigin={{ vertical: "top", horizontal: "right" }}>
-              <MenuItem onClick={handleProfile}>Profile</MenuItem>
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              <MenuItem onClick={toggleMode}>
+                <ListItemIcon>
+                  {mode === "light" ? <DarkModeIcon fontSize="small" /> : <LightModeIcon fontSize="small" />}
+                </ListItemIcon>
+                {mode === "light" ? "Dark mode" : "Light mode"}
+              </MenuItem>
+              <MenuItem onClick={handleProfile}>
+                <ListItemIcon>
+                  <PersonOutlineIcon fontSize="small" />
+                </ListItemIcon>
+                Profile
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>
+                <ListItemIcon>
+                  <LogoutIcon fontSize="small" />
+                </ListItemIcon>
+                Logout
+              </MenuItem>
             </Menu>
           </Toolbar>
         </AppBar>
