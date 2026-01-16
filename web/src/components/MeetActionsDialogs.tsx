@@ -151,7 +151,7 @@ function MeetActionsDialogs({
       default:
         break;
     }
-  }, [pendingAction, meetId, onActionConfirm]);
+  }, [pendingAction, meetId, onActionConfirm, setSelectedMeetId]);
 
   // For now this is just closing the dialog
   const handleConfirm = async () => {

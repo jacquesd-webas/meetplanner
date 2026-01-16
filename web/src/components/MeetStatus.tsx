@@ -1,5 +1,4 @@
 import { Chip } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import { useMeetStatusLookup } from "../hooks/useFetchMeetStatuses";
 
 type MeetStatusProps = {
@@ -11,7 +10,6 @@ export function MeetStatus({
   statusId,
   fallbackLabel = "Scheduled",
 }: MeetStatusProps) {
-  const theme = useTheme();
   const { getName } = useMeetStatusLookup();
   const name = getName(statusId, fallbackLabel);
 
@@ -51,14 +49,6 @@ export function MeetStatus({
       break;
     }
   }
-
-  const successSx =
-    color === "success"
-      ? {
-          bgcolor: theme.palette.success.main,
-          color: theme.palette.success.contrastText,
-        }
-      : undefined;
 
   return <Chip size="small" label={name} color={color} />;
 }

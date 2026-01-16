@@ -172,7 +172,7 @@ export function CreateMeetModal({
   const [showSteps, setShowSteps] = useState(!fullScreen);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const api = useApi();
-  const { save: saveMeet, isSaving } = useSaveMeet(meetIdProp ?? null);
+  const { save: saveMeet } = useSaveMeet(meetIdProp ?? null);
   const { updateStatusAsync, isLoading: isPublishing } = useUpdateMeetStatus();
   const { user } = useMe();
   const { users } = useUsers();
@@ -364,6 +364,7 @@ export function CreateMeetModal({
     state.approvedResponse,
     state.rejectResponse,
     state.waitlistResponse,
+    state.statusId,
     state.imageFile,
     state.imagePreview,
     meetId,

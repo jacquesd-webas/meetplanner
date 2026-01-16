@@ -20,7 +20,6 @@ import {
   PendingAction,
 } from "../components/MeetActionsDialogs";
 import { useFetchMeets } from "../hooks/useFetchMeets";
-import Meet from "../models/MeetModel";
 import { defaultPendingAction } from "../helpers/defaultPendingAction";
 
 function PlanPage() {

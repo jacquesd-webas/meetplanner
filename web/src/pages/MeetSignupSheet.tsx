@@ -4,14 +4,12 @@ import {
   Paper,
   Stack,
   Typography,
-  Chip,
   FormControlLabel,
   Switch,
   Button,
   TextField,
   MenuItem,
   Alert,
-  IconButton,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -69,7 +67,6 @@ type MeetSignupFormProps = {
   guestCount: number;
   metaValues: Record<string, any>;
   indemnityAccepted: boolean;
-  isPreview: boolean;
   isSubmitDisabled: boolean;
   isSubmitting: boolean;
   onSubmit: () => void;
@@ -132,7 +129,6 @@ function MeetSignupFormFields({
   guestCount,
   metaValues,
   indemnityAccepted,
-  isPreview,
   isSubmitDisabled,
   isSubmitting,
   onSubmit,
@@ -358,7 +354,6 @@ function MeetSignupSheet() {
   } | null>(null);
   const {
     indemnityAccepted,
-    showIndemnity,
     fullName,
     email,
     wantsGuests,
@@ -776,7 +771,6 @@ function MeetSignupSheet() {
                   guestCount={guestCount}
                   metaValues={metaValues}
                   indemnityAccepted={indemnityAccepted}
-                  isPreview={isPreview}
                   isSubmitDisabled={isSubmitDisabled}
                   isSubmitting={isSubmitting}
                   onSubmit={handleSubmit}

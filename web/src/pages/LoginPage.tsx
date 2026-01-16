@@ -8,7 +8,6 @@ import {
   TextField,
   Typography,
   Alert,
-  Divider,
 } from "@mui/material";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -30,7 +29,6 @@ function LoginPage() {
     loginAsync({ email, password })
       .then(() => navigate("/"))
       .catch((err) => {
-        // eslint-disable-next-line no-console
         console.error("Login failed", err);
       });
   };

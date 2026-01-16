@@ -71,7 +71,6 @@ function RegisterPage() {
     })
       .then(() => navigate("/"))
       .catch((err) => {
-        // eslint-disable-next-line no-console
         console.error("Registration failed", err);
       });
   };

@@ -1,6 +1,5 @@
 import {
   Box,
-  Chip,
   Paper,
   Stack,
   Typography,
@@ -116,7 +115,7 @@ export function MeetCard({
         <Typography variant="h6" sx={{ flex: 1 }}>
           {meet.name}
         </Typography>
-        <MeetStatus statusId={meet.statusId} />
+        <MeetStatus statusId={meet.statusId} fallbackLabel={statusLabel} />
         <Box sx={{ ml: 0.5 }} onClick={(e) => e.stopPropagation()}>
           <MeetActionsMenu
             meetId={meet.id}

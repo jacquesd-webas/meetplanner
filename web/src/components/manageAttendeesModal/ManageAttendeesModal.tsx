@@ -52,7 +52,6 @@ export function ManageAttendeesModal({
     null
   );
   const [isUpdating, setIsUpdating] = useState(false);
-  const [waitlistSize, setWaitlistSize] = useState<number | null>(null);
   const [meetStatus, setMeetStatus] = useState<number | null>(null);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState(false);
@@ -77,14 +76,10 @@ export function ManageAttendeesModal({
 
   useEffect(() => {
     if (!open || (!meetId && !meet)) {
-      setWaitlistSize(null);
       return;
     }
 
     if (meet) {
-      const size =
-        (meet as any)?.waitlistSize ?? (meet as any)?.waitlist_size ?? 0;
-      setWaitlistSize(Number(size) || 0);
       const statusVal =
         typeof meet.statusId !== "undefined" ? meet.statusId : null;
       const statusNum =
@@ -103,8 +98,6 @@ export function ManageAttendeesModal({
       .get(`/meets/${meetId}`)
       .then((m: any) => {
         if (!isActive) return;
-        const size = m?.waitlistSize ?? m?.waitlist_size ?? 0;
-        setWaitlistSize(Number(size) || 0);
         const statusVal =
           typeof m?.statusId !== "undefined" ? m.statusId : null;
         const statusNum =
@@ -118,7 +111,6 @@ export function ManageAttendeesModal({
       })
       .catch(() => {
         if (!isActive) return;
-        setWaitlistSize(0);
         setMeetStatus(null);
       });
     return () => {

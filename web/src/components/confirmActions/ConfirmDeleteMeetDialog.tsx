@@ -10,7 +10,7 @@ type ConfirmDeleteMeetDialogProps = {
 
 export function ConfirmDeleteMeetDialog({
   open,
-  meetId,
+  meetId: _meetId,
   onClose,
   onConfirm,
   isLoading = false
