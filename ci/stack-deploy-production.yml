@@ -59,6 +59,21 @@ services:
         constraints:
           - node.hostname == webapps2
 
+  mail:
+    image: fringecoding/adventuremeets_mail:${VERSION:-latest}
+    env_file:
+      - ./.env
+    environment:
+    ports:
+      - "1025:25"
+    networks:
+      - adventuremeets
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == webapps2
+
 networks:
   adventuremeets:
 
