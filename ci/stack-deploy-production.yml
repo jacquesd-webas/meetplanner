@@ -63,7 +63,6 @@ services:
     image: fringecoding/adventuremeets_mail:${VERSION:-latest}
     env_file:
       - ./.env
-    environment:
     ports:
       - "1025:25"
     networks:
