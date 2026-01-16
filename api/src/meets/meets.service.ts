@@ -189,14 +189,6 @@ export class MeetsService {
     if (!meet) {
       throw new NotFoundException("Meet not found");
     }
-    const image = await this.db
-      .getClient()("meet_images")
-      .where({ meet_id: meet.id })
-      .orderBy([
-        { column: "is_primary", order: "desc" },
-        { column: "created_at", order: "desc" },
-      ])
-      .first();
     const metaDefinitions = await this.db
       .getClient()("meet_meta_definitions")
       .where({ meet_id: meet.id })

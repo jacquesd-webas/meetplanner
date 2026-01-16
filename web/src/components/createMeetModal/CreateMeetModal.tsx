@@ -284,10 +284,14 @@ export function CreateMeetModal({
           errors.openingDate = "Applications open is required";
         if (!draft.closingDate)
           errors.closingDate = "Applications close is required";
-        if (draft.capacity === "" || Number(draft.capacity) < 0) {
+        if (draft.capacity === undefined || draft.capacity === "") {
+          errors.capacity = "Capacity is required, use 0 for unlimited";
+        } else if (Number(draft.capacity) < 0) {
           errors.capacity = "Capacity cannot be negative";
         }
-        if (draft.waitlistSize === "" || Number(draft.waitlistSize) < 0) {
+        if (draft.waitlistSize === undefined || draft.waitlistSize === "") {
+          errors.waitlistSize = "Waitlist size is required, use 0 for none";
+        } else if (Number(draft.waitlistSize) < 0) {
           errors.waitlistSize = "Waitlist size cannot be negative";
         }
         break;
@@ -414,7 +418,7 @@ export function CreateMeetModal({
           closingDate: draft.closingDate || undefined,
           capacity: draft.capacity === "" ? undefined : Number(draft.capacity),
           waitlistSize:
-            draft.waitlistSize === "" ? 0 : Number(draft.waitlistSize),
+            draft.waitlistSize === "" ? undefined : Number(draft.waitlistSize),
           autoPlacement: draft.autoApprove,
           autoPromoteWaitlist: draft.autoCloseWaitlist,
           allowGuests: draft.allowGuests,
@@ -716,67 +720,75 @@ export function CreateMeetModal({
           }}
         >
           <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          mb={2}
-        >
-          <Typography variant="h6" fontWeight={700}>
-            New meet
-          </Typography>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <IconButton
-              onClick={() => setShowSteps((prev) => !prev)}
-              aria-label={showSteps ? "Hide panel" : "Show panel"}
-            >
-              {showSteps ? <ViewDayOutlinedIcon /> : <VerticalSplitOutlinedIcon />}
-            </IconButton>
-            <IconButton onClick={() => handleCancel()}>
-              <CloseIcon />
-            </IconButton>
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            mb={2}
+          >
+            <Typography variant="h6" fontWeight={700}>
+              New meet
+            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <IconButton
+                onClick={() => setShowSteps((prev) => !prev)}
+                aria-label={showSteps ? "Hide panel" : "Show panel"}
+              >
+                {showSteps ? (
+                  <ViewDayOutlinedIcon />
+                ) : (
+                  <VerticalSplitOutlinedIcon />
+                )}
+              </IconButton>
+              <IconButton onClick={() => handleCancel()}>
+                <CloseIcon />
+              </IconButton>
+            </Stack>
           </Stack>
-        </Stack>
-        {submitError && (
-          <Typography color="error" variant="body2" sx={{ mb: 2 }}>
-            {submitError}
-          </Typography>
-        )}
-        <Stack
-          direction="row"
-          spacing={showSteps ? 3 : 0}
-          sx={{ flex: 1, overflow: "hidden" }}
-        >
-          {showSteps && (
-            <Box
-              sx={{
-                minWidth: 220,
-                pr: 2,
-                borderRight: 1,
-                borderColor: "divider",
-              }}
-            >
-              <Stepper activeStep={activeStep} orientation="vertical" nonLinear>
-                {steps.map((label, index) => (
-                  <Step
-                    key={label}
-                    completed={completedSteps.includes(index + 1)}
-                  >
-                    <StepLabel
-                      onClick={() => handleStepChange(index)}
-                      sx={{ cursor: "pointer" }}
-                    >
-                      {label}
-                    </StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
-            </Box>
+          {submitError && (
+            <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+              {submitError}
+            </Typography>
           )}
-          <Stack sx={{ flex: 1, minHeight: 0 }}>
-            <Box sx={{ flex: 1, overflowY: "auto", pr: 1 }}>
-              {renderStep()}
-            </Box>
-            <Box
+          <Stack
+            direction="row"
+            spacing={showSteps ? 3 : 0}
+            sx={{ flex: 1, overflow: "hidden" }}
+          >
+            {showSteps && (
+              <Box
+                sx={{
+                  minWidth: 220,
+                  pr: 2,
+                  borderRight: 1,
+                  borderColor: "divider",
+                }}
+              >
+                <Stepper
+                  activeStep={activeStep}
+                  orientation="vertical"
+                  nonLinear
+                >
+                  {steps.map((label, index) => (
+                    <Step
+                      key={label}
+                      completed={completedSteps.includes(index + 1)}
+                    >
+                      <StepLabel
+                        onClick={() => handleStepChange(index)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        {label}
+                      </StepLabel>
+                    </Step>
+                  ))}
+                </Stepper>
+              </Box>
+            )}
+            <Stack sx={{ flex: 1, minHeight: 0 }}>
+              <Box sx={{ flex: 1, overflowY: "auto", pr: 1 }}>
+                {renderStep()}
+              </Box>
+              <Box
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",

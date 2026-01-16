@@ -3,11 +3,12 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
-import { useMemo, useState, MouseEvent, useEffect } from "react";
+import { useMemo, useState, MouseEvent } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useMe } from "../hooks/useMe";
 import { ProfileModal } from "../components/ProfileModal";
 import { getLogoSrc } from "../helpers/logo";
+import { useThemeMode } from "../context/ThemeModeContext";
 
 const navItems = [
   { label: "Dashboard", path: "/" },
@@ -21,6 +22,7 @@ function MainLayout() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { user } = useMe();
   const [profileOpen, setProfileOpen] = useState(false);
+  const { mode, toggleMode } = useThemeMode();
 
   const displayName = useMemo(() => {
     if (!user) return "";
@@ -61,22 +63,17 @@ function MainLayout() {
     navigate("/login");
   };
 
-  const [mode, setMode] = useState<"light" | "dark">(
-    () => (localStorage.getItem("themeMode") as "light" | "dark") || "light"
-  );
+  const handleToggleMode = () => {
+    toggleMode();
+    handleMenuClose();
+  };
 
-  useEffect(() => {
-    document.body.setAttribute("data-theme", mode);
-    localStorage.setItem("themeMode", mode);
-  }, [mode]);
-
-  const toggleMode = () => setMode((prev) => (prev === "light" ? "dark" : "light"));
   const logoSrc = getLogoSrc(mode);
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
       {!isMobile && (
-        <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <AppBar position="sticky" color="transparent" elevation={0} sx={{ borderBottom: 1, borderColor: "divider", top: 0 }}>
           <Toolbar>
             <Box component="img" src={logoSrc} alt="AdventureMeets logo" sx={{ height: 36, mr: 3 }} />
             <Stack direction="row" spacing={2} alignItems="center">
@@ -105,7 +102,7 @@ function MainLayout() {
               </IconButton>
             </Tooltip>
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} transformOrigin={{ vertical: "top", horizontal: "right" }}>
-              <MenuItem onClick={toggleMode}>
+              <MenuItem onClick={handleToggleMode}>
                 <ListItemIcon>
                   {mode === "light" ? <DarkModeIcon fontSize="small" /> : <LightModeIcon fontSize="small" />}
                 </ListItemIcon>
@@ -127,7 +124,17 @@ function MainLayout() {
           </Toolbar>
         </AppBar>
       )}
-      <Container maxWidth={isMobile ? false : "lg"} disableGutters={isMobile} sx={{ py: isMobile ? 1 : 3, px: isMobile ? 1.5 : 0 }}>
+      <Container
+        maxWidth={isMobile ? false : "lg"}
+        disableGutters={isMobile}
+        sx={{
+          flex: 1,
+          overflowY: "auto",
+          overscrollBehavior: "contain",
+          py: isMobile ? 1 : 3,
+          px: isMobile ? 1.5 : 0
+        }}
+      >
         <Outlet />
       </Container>
       <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />

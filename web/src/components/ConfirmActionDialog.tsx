@@ -37,6 +37,7 @@ export function ConfirmActionDialog({
 }: ConfirmActionDialogProps) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const dialogZIndex = theme.zIndex.modal + 200;
 
   const content = (
     <>
@@ -63,11 +64,11 @@ export function ConfirmActionDialog({
   );
 
   return fullScreen ? (
-    <Drawer anchor="bottom" open={open} onClose={onClose}>
+    <Drawer anchor="bottom" open={open} onClose={onClose} sx={{ zIndex: dialogZIndex }}>
       {content}
     </Drawer>
   ) : (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs" sx={{ zIndex: dialogZIndex }}>
       {content}
     </Dialog>
   );

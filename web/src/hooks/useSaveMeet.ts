@@ -25,8 +25,12 @@ export function useSaveMeet(defaultMeetId?: string | null) {
         (typeof error === "string" ? error : "Failed to save meet");
       enqueueSnackbar(message, { variant: "error" });
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["meets"] });
+      const meetId = variables.meetId ?? (data as any)?.id;
+      if (meetId) {
+        queryClient.invalidateQueries({ queryKey: ["meet", meetId] });
+      }
     },
   });
 

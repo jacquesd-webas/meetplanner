@@ -33,51 +33,55 @@ type CountProps = { count1?: number; count2?: number };
 
 const DraftCardCount = () => <></>;
 
-const UpcomingCardCount = ({ count1, count2 }: CountProps) => (
-  <Stack direction="row" spacing={2} alignItems="center" mt={1.5}>
-    <Stack direction="row" spacing={0.5} alignItems="center">
-      <GroupOutlinedIcon fontSize="small" color="primary" />
-      <Typography variant="body2" fontWeight={600}>
-        {count1 ?? 0}
-      </Typography>
-      <Typography variant="caption" color="text.secondary">
-        applicants
-      </Typography>
+const UpcomingCardCount = ({ count1, count2 }: CountProps) => {
+  return (
+    <Stack direction="row" spacing={2} alignItems="center" mt={1.5}>
+      <Stack direction="row" spacing={0.5} alignItems="center">
+        <GroupOutlinedIcon fontSize="small" color="primary" />
+        <Typography variant="body2" fontWeight={600} color="text.secondary">
+          {count1 ?? 0}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          applicants
+        </Typography>
+      </Stack>
+      <Stack direction="row" spacing={0.5} alignItems="center">
+        <GroupOutlinedIcon fontSize="small" color="disabled" />
+        <Typography variant="body2" fontWeight={600} color="text.secondary">
+          {count2 ?? 0}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          waitlist
+        </Typography>
+      </Stack>
     </Stack>
-    <Stack direction="row" spacing={0.5} alignItems="center">
-      <GroupOutlinedIcon fontSize="small" color="disabled" />
-      <Typography variant="body2" fontWeight={600}>
-        {count2 ?? 0}
-      </Typography>
-      <Typography variant="caption" color="text.secondary">
-        waitlist
-      </Typography>
-    </Stack>
-  </Stack>
-);
+  );
+};
 
-const PastCardCount = ({ count1, count2 }: CountProps) => (
-  <Stack direction="row" spacing={2} alignItems="center" mt={1.5}>
-    <Stack direction="row" spacing={0.5} alignItems="center">
-      <CheckCircleOutlineIcon fontSize="small" color="primary" />
-      <Typography variant="body2" fontWeight={600}>
-        {count1 ?? 0}
-      </Typography>
-      <Typography variant="caption" color="text.secondary">
-        confirmed
-      </Typography>
+const PastCardCount = ({ count1, count2 }: CountProps) => {
+  return (
+    <Stack direction="row" spacing={2} alignItems="center" mt={1.5}>
+      <Stack direction="row" spacing={0.5} alignItems="center">
+        <CheckCircleOutlineIcon fontSize="small" color="primary" />
+        <Typography variant="body2" fontWeight={600} color="text.secondary">
+          {count1 ?? 0}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          confirmed
+        </Typography>
+      </Stack>
+      <Stack direction="row" spacing={0.5} alignItems="center">
+        <GroupOutlinedIcon fontSize="small" color="disabled" />
+        <Typography variant="body2" fontWeight={600} color="text.secondary">
+          {count2 ?? 0}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          attended
+        </Typography>
+      </Stack>
     </Stack>
-    <Stack direction="row" spacing={0.5} alignItems="center">
-      <GroupOutlinedIcon fontSize="small" color="disabled" />
-      <Typography variant="body2" fontWeight={600}>
-        {count2 ?? 0}
-      </Typography>
-      <Typography variant="caption" color="text.secondary">
-        attended
-      </Typography>
-    </Stack>
-  </Stack>
-);
+  );
+};
 
 export function MeetCard({
   meet,
@@ -125,12 +129,16 @@ export function MeetCard({
       </Stack>
       <Stack direction="row" spacing={1} alignItems="center" mt={1}>
         <PlaceIcon fontSize="small" color="disabled" />
-        <Typography variant="body2">{meet.location}</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {meet.location}
+        </Typography>
       </Stack>
       <Stack direction="row" spacing={1} alignItems="center" mt={1}>
         <AccessTimeIcon fontSize="small" color="disabled" />
         {rangeLabel ? (
-          <Typography variant="body2">{rangeLabel}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {rangeLabel}
+          </Typography>
         ) : null}
       </Stack>
       {isDraft ? (

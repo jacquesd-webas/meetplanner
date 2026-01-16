@@ -23,6 +23,9 @@ services:
       - adventuremeets
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - node.hostname == webapps2
 
   worker:
     image: fringecoding/adventuremeets_worker:${VERSION:-latest}
@@ -42,13 +45,19 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
     command: server /data --console-address ":9001"
     ports:
-      - "9005:9000"
+      - target: 9000
+        published: 9005
+        protocol: tcp
+        mode: host
     volumes:
       - minio_data:/data
     networks:
       - adventuremeets
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - node.hostname == webapps2
 
 networks:
   adventuremeets:
