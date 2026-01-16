@@ -8,7 +8,7 @@ on:
       - "*"
 
 env:
-  DOCKER_IMAGES: api worker db_migrate
+  DOCKER_IMAGES: api worker db_migrate mail
   WEB_PROJECTS: web
   NODE_PROJECTS: api worker web
   CI_REGISTRY_HOST: ${{ vars.CI_REGISTRY_HOST }}
